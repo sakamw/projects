@@ -60,12 +60,13 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-[80vh] items-center justify-center p-6">
+      <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle>Create account</CardTitle>
+          <CardTitle>Create your account</CardTitle>
           <CardDescription>
-            All fields are required. Use a strong password.
+            Create your account to get started. All fields are required — use a
+            strong password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,7 +79,7 @@ export default function Register() {
                 <input
                   id="firstName"
                   type="text"
-                  className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2"
+                  className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
@@ -92,7 +93,7 @@ export default function Register() {
                 <input
                   id="lastName"
                   type="text"
-                  className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2"
+                  className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
@@ -107,7 +108,7 @@ export default function Register() {
               <input
                 id="email"
                 type="email"
-                className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2"
+                className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -121,7 +122,7 @@ export default function Register() {
               <input
                 id="username"
                 type="text"
-                className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2"
+                className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -136,7 +137,7 @@ export default function Register() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className="w-full rounded-md border bg-background px-3 py-2 pr-10 outline-none focus:ring-2"
+                  className="w-full rounded-md border bg-background px-4 py-3 pr-10 outline-none focus:ring-2"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -160,7 +161,7 @@ export default function Register() {
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  className="w-full rounded-md border bg-background px-3 py-2 pr-10 outline-none focus:ring-2"
+                  className="w-full rounded-md border bg-background px-4 py-3 pr-10 outline-none focus:ring-2"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -209,6 +210,14 @@ export default function Register() {
             >
               Sign in
             </button>
+            <div className="mt-4 text-sm">
+              <button
+                className="text-primary underline"
+                onClick={() => navigate("/")}
+              >
+                ↶ Back to Home
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

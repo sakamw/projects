@@ -20,6 +20,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const isValid = identifier.trim().length > 0 && password.trim().length > 0;
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,12 +51,12 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-[80vh] items-center justify-center p-6">
+      <Card className="w-full max-w-lg min-h-[420px]">
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle>Welcome back</CardTitle>
           <CardDescription>
-            Use your email or username to sign in.
+            Sign in to continue where you left off. Use your email or username.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -67,7 +68,7 @@ export default function Login() {
               <input
                 id="identifier"
                 type="text"
-                className="w-full rounded-md border bg-background px-3 py-2 outline-none focus:ring-2"
+                className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
@@ -82,7 +83,7 @@ export default function Login() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  className="w-full rounded-md border bg-background px-3 py-2 pr-10 outline-none focus:ring-2"
+                  className="w-full rounded-md border bg-background px-4 py-3 pr-10 outline-none focus:ring-2"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -97,6 +98,24 @@ export default function Login() {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                Remember me
+              </label>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-primary underline"
+              >
+                Forgot password?
+              </button>
             </div>
             {error && (
               <div className="text-sm text-red-600" role="alert">
@@ -119,6 +138,14 @@ export default function Login() {
             >
               Create one
             </button>
+            <div className="mt-4 text-sm">
+              <button
+                className="text-primary underline"
+                onClick={() => navigate("/")}
+              >
+                ↶ Back to Home
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

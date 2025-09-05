@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap");
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -30,27 +32,75 @@ body {
   color: #e4e4e7;
 }
 
+/* Hero display font */
+.font-hero {
+  font-family: "Sora", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
 /* Dark theme color variables */
-.bg-background { background-color: #0f0f23; }
-.bg-muted { background-color: #18181b; }
-.bg-muted\/40 { background-color: rgba(24, 24, 27, 0.4); }
-.bg-card { background-color: #18181b; }
-.bg-popover { background-color: #18181b; }
-.bg-primary { background-color: #3b82f6; }
-.bg-secondary { background-color: #27272a; }
-.bg-accent { background-color: #27272a; }
-.bg-destructive { background-color: #ef4444; }
+.bg-background {
+  background-color: #0f0f23;
+}
+.bg-muted {
+  background-color: #18181b;
+}
+.bg-muted\/40 {
+  background-color: rgba(24, 24, 27, 0.4);
+}
+.bg-card {
+  background-color: #18181b;
+}
+.bg-popover {
+  background-color: #18181b;
+}
+.bg-primary {
+  background-color: #3b82f6;
+}
+.bg-secondary {
+  background-color: #27272a;
+}
+.bg-accent {
+  background-color: #27272a;
+}
+.bg-destructive {
+  background-color: #ef4444;
+}
 
-.text-foreground { color: #e4e4e7; }
-.text-muted-foreground { color: #71717a; }
-.text-card-foreground { color: #e4e4e7; }
-.text-popover-foreground { color: #e4e4e7; }
-.text-primary-foreground { color: #ffffff; }
-.text-secondary-foreground { color: #e4e4e7; }
-.text-accent-foreground { color: #e4e4e7; }
-.text-destructive-foreground { color: #ffffff; }
+.text-foreground {
+  color: #e4e4e7;
+}
+.text-muted-foreground {
+  color: #71717a;
+}
+.text-card-foreground {
+  color: #e4e4e7;
+}
+.text-popover-foreground {
+  color: #e4e4e7;
+}
+.text-primary-foreground {
+  color: #ffffff;
+}
+.text-secondary-foreground {
+  color: #e4e4e7;
+}
+.text-accent-foreground {
+  color: #e4e4e7;
+}
+.text-destructive-foreground {
+  color: #ffffff;
+}
 
-.border { border-color: #27272a; }
-.border-border { border-color: #27272a; }
-.border-input { border-color: #27272a; }
-.border-ring { border-color: #3b82f6; }
+.border {
+  border-color: #27272a;
+}
+.border-border {
+  border-color: #27272a;
+}
+.border-input {
+  border-color: #27272a;
+}
+.border-ring {
+  border-color: #3b82f6;
+}

@@ -52,21 +52,21 @@ export function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-12 sm:py-20 lg:py-32 w-full">
+      <section className="relative overflow-hidden w-full min-h-[100vh] flex items-center">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight text-gray-900">
-              Report Issues.
-              <span className="block text-blue-600">Get Them Fixed.</span>
+            <h1 className="font-hero text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-gray-900">
+              Report Issues
+              <span className="block text-blue-600">Get Them Fixed</span>
             </h1>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-gray-600 max-w-4xl mx-auto">
+            <p className="mt-6 text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto">
               Join your community in identifying and resolving campus issues.
               From broken lights to security concerns, we make it easy to report
               problems and track their resolution.
             </p>
-            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
               <Link to="/register">
-                <Button size="lg" className="text-lg px-8 py-4">
+                <Button size="lg" className="text-lg px-10 py-5">
                   Start Reporting
                 </Button>
               </Link>
@@ -74,7 +74,7 @@ export function LandingPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-lg px-8 py-4"
+                  className="text-lg px-10 py-5"
                 >
                   View Issues
                 </Button>
