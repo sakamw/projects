@@ -13,16 +13,36 @@ const API_BASE =
   (import.meta as any).env?.VITE_API_URL || "http://localhost:4300/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    ...init,
-  });
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(message || `Request failed: ${res.status}`);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      ...init,
+    });
+    if (!res.ok) {
+      let friendly = `Request failed (${res.status})`;
+      try {
+        const data = await res.json();
+        const msg = (data && (data.message || data.error)) as
+          | string
+          | undefined;
+        if (msg) friendly = msg;
+      } catch {
+        const text = await res.text();
+        if (text) friendly = text;
+      }
+      throw new Error(friendly);
+    }
+    return (await res.json()) as T;
+  } catch (e: unknown) {
+    if (e instanceof TypeError) {
+      // Network/CORS or server unreachable
+      throw new Error(
+        "Cannot reach the server. Please check your connection and try again."
+      );
+    }
+    throw e as Error;
   }
-  return (await res.json()) as T;
 }
 
 export function fetchReports(
@@ -41,4 +61,42 @@ export function fetchReports(
   return request<ApiReport[]>(`/reports${qs}`);
 }
 
-export const api = { fetchReports };
+// Auth types
+export type ApiUser = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  isAdmin?: boolean;
+  verified?: boolean;
+};
+
+export async function loginApi(params: {
+  identifier: string;
+  password: string;
+}): Promise<ApiUser> {
+  return request<ApiUser>(`/auth/login`, {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+export async function registerApi(params: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  password: string;
+}): Promise<{ message: string }> {
+  return request<{ message: string }>(`/auth/register`, {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+export async function logoutApi(): Promise<{ message?: string }> {
+  return request<{ message?: string }>(`/auth/logout`, { method: "POST" });
+}
+
+export const api = { fetchReports, loginApi, registerApi, logoutApi };

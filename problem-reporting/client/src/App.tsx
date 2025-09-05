@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { LandingPage } from "./components/LandingPage";
 import UserDashboard from "./pages/dashboard/UserDashboard";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 
 function App() {
   return (
@@ -9,8 +11,8 @@ function App() {
       <main className="w-full">
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<div>Login</div>} />
-          <Route path="/register" element={<div>Register</div>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/reports" element={<div>Report List</div>} />
           <Route path="/reports/new" element={<div>Create Report</div>} />
