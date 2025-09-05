@@ -21,5 +21,158 @@ model User {
   verified Boolean @default(false) @map("is_verified")
   isAdmin Boolean @default(false) @map("is_admin")
 
+  // Relations
+  reports Report[]
+  comments Comment[]
+  votes Vote[]
+  notifications Notification[]
+  assignments ReportAssignment[]
+  userPoints UserPoints?
+
   @@map("user")
+}
+
+// Categorization for reports
+enum ReportCategory {
+  IT
+  SECURITY
+  INFRASTRUCTURE
+  SANITATION
+  ELECTRICAL
+  WATER
+  OTHER
+}
+
+// Status lifecycle
+enum ReportStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+}
+
+// Vote type
+enum VoteType {
+  UP
+  DOWN
+}
+
+model Department {
+  id String @id @default(uuid()) @map("department_id")
+  name String @unique
+  description String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  reports Report[]
+  assignments ReportAssignment[]
+
+  @@map("department")
+}
+
+model Report {
+  id String @id @default(uuid()) @map("report_id")
+  userId String @map("user_id")
+  title String
+  description String
+  category ReportCategory
+  status ReportStatus @default(PENDING)
+
+  // Basic geolocation (lat/lng). Consider PostGIS in future migrations.
+  latitude  Float?
+  longitude Float?
+  address   String?
+
+  // Media stored as URLs (local or cloud storage)
+  mediaUrls String[] @default([])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Optional assignment
+  departmentId String? @map("department_id")
+
+  // Relations
+  author User @relation(fields: [userId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  comments Comment[]
+  votes Vote[]
+  notifications Notification[]
+  assignments ReportAssignment[]
+
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+  @@map("report")
+}
+
+model ReportAssignment {
+  id String @id @default(uuid()) @map("assignment_id")
+  reportId String @map("report_id")
+  departmentId String @map("department_id")
+  assignedByUserId String @map("assigned_by_user_id")
+  note String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  report Report @relation(fields: [reportId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+  assignedBy User @relation(fields: [assignedByUserId], references: [id])
+
+  @@map("report_assignment")
+}
+
+model Comment {
+  id String @id @default(uuid()) @map("comment_id")
+  reportId String @map("report_id")
+  userId String @map("user_id")
+  text String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  report Report @relation(fields: [reportId], references: [id])
+  author User @relation(fields: [userId], references: [id])
+
+  @@index([reportId, createdAt])
+  @@map("comment")
+}
+
+model Vote {
+  id String @id @default(uuid()) @map("vote_id")
+  reportId String @map("report_id")
+  userId String @map("user_id")
+  voteType VoteType @map("vote_type")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  report Report @relation(fields: [reportId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([reportId, userId])
+  @@map("vote")
+}
+
+model Notification {
+  id String @id @default(uuid()) @map("notification_id")
+  userId String @map("user_id")
+  reportId String? @map("report_id")
+  subject String
+  body String
+  isRead Boolean @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  report Report? @relation(fields: [reportId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notification")
+}
+
+// Simple gamification: track points per user
+model UserPoints {
+  userId String @id @map("user_id")
+  points Int @default(0)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("user_points")
 }

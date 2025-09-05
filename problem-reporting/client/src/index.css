@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0f0f23;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  border-color: #27272a;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #0f0f23;
+  color: #e4e4e7;
+}
+
+/* Dark theme color variables */
+.bg-background { background-color: #0f0f23; }
+.bg-muted { background-color: #18181b; }
+.bg-muted\/40 { background-color: rgba(24, 24, 27, 0.4); }
+.bg-card { background-color: #18181b; }
+.bg-popover { background-color: #18181b; }
+.bg-primary { background-color: #3b82f6; }
+.bg-secondary { background-color: #27272a; }
+.bg-accent { background-color: #27272a; }
+.bg-destructive { background-color: #ef4444; }
+
+.text-foreground { color: #e4e4e7; }
+.text-muted-foreground { color: #71717a; }
+.text-card-foreground { color: #e4e4e7; }
+.text-popover-foreground { color: #e4e4e7; }
+.text-primary-foreground { color: #ffffff; }
+.text-secondary-foreground { color: #e4e4e7; }
+.text-accent-foreground { color: #e4e4e7; }
+.text-destructive-foreground { color: #ffffff; }
+
+.border { border-color: #27272a; }
+.border-border { border-color: #27272a; }
+.border-input { border-color: #27272a; }
+.border-ring { border-color: #3b82f6; }
