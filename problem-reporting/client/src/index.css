@@ -104,3 +104,20 @@ body {
 .border-ring {
   border-color: #3b82f6;
 }
+
+/* Chart color variables to match shadcn charts palette */
+:root {
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+
+  --color-steps: hsl(var(--chart-1));
+  --color-resting: hsl(var(--chart-1));
+  --color-stand: hsl(var(--chart-2));
+  --color-exercise: hsl(var(--chart-3));
+  --color-move: hsl(var(--chart-1));
+  --color-calories: hsl(var(--chart-1));
+  --color-time: hsl(var(--chart-2));
+}

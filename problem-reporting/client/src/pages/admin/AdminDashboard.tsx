@@ -110,6 +110,12 @@ const AdminDashboard = () => {
             </Link>
             <Link
               className="block rounded-md px-3 py-2 hover:bg-accent"
+              to="/admin/analytics"
+            >
+              Analytics
+            </Link>
+            <Link
+              className="block rounded-md px-3 py-2 hover:bg-accent"
               to="/reports"
             >
               Reports

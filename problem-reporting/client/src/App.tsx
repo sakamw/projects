@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Analytics from "./pages/admin/Analytics";
 import { LandingPage } from "./components/LandingPage";
 import UserDashboard from "./pages/dashboard/UserDashboard";
 import Login from "./pages/auth/Login";
@@ -18,6 +19,7 @@ function App() {
           <Route path="/reports/new" element={<div>Create Report</div>} />
           <Route path="/reports/:id" element={<div>Report Detail</div>} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/analytics" element={<Analytics />} />
         </Routes>
       </main>
     </div>
