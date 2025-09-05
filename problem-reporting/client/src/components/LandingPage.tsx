@@ -4,21 +4,21 @@ import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen w-full bg-background text-foreground">
       {/* Navigation */}
-      <nav className="w-full border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="w-full border-b border-border bg-muted/40 backdrop-blur-sm sticky top-0 z-50">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-blue-600">Fix</h1>
+                <h1 className="text-2xl font-bold text-primary">Fix</h1>
               </div>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                  className="text-foreground hover:text-primary px-3 py-2 text-sm font-medium"
                 >
                   Login
                 </Link>
@@ -55,11 +55,11 @@ export function LandingPage() {
       <section className="relative overflow-hidden w-full min-h-[100vh] flex items-center">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center">
-            <h1 className="font-hero text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-gray-900">
+            <h1 className="font-hero text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-foreground">
               Report Issues
-              <span className="block text-blue-600">Get Them Fixed</span>
+              <span className="block text-primary">Get Them Fixed</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto">
+            <p className="mt-6 text-lg sm:text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto">
               Join your community in identifying and resolving campus issues.
               From broken lights to security concerns, we make it easy to report
               problems and track their resolution.
@@ -85,23 +85,23 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 sm:py-20 bg-white w-full">
+      <section className="py-12 sm:py-20 bg-muted w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               How It Works
             </h2>
-            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-muted-foreground">
               Simple steps to make your campus better
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center bg-card text-card-foreground border shadow-lg">
               <CardHeader>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 mb-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-900/30 mb-4">
                   <svg
-                    className="h-8 w-8 text-blue-600"
+                    className="h-8 w-8 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -122,11 +122,11 @@ export function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center bg-card text-card-foreground border shadow-lg">
               <CardHeader>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-900/30 mb-4">
                   <svg
-                    className="h-8 w-8 text-green-600"
+                    className="h-8 w-8 text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -147,11 +147,11 @@ export function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-0 shadow-lg">
+            <Card className="text-center bg-card text-card-foreground border shadow-lg">
               <CardHeader>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 mb-4">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-900/30 mb-4">
                   <svg
-                    className="h-8 w-8 text-purple-600"
+                    className="h-8 w-8 text-purple-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -176,13 +176,13 @@ export function LandingPage() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-12 sm:py-20 bg-gray-50 w-full">
+      <section className="py-12 sm:py-20 bg-background w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
               What Can You Report?
             </h2>
-            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-muted-foreground">
               From infrastructure to safety, we cover all campus concerns
             </p>
           </div>
@@ -228,7 +228,7 @@ export function LandingPage() {
                 >
                   <span className="text-2xl">{category.icon}</span>
                 </div>
-                <h3 className="text-sm font-medium text-gray-900">
+                <h3 className="text-sm font-medium text-foreground">
                   {category.name}
                 </h3>
               </div>
@@ -238,7 +238,7 @@ export function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 sm:py-20 bg-blue-600 w-full">
+      <section className="py-12 sm:py-20 bg-blue-700 w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-4 text-center">
             <div>
@@ -262,12 +262,12 @@ export function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-20 bg-white w-full">
+      <section className="py-12 sm:py-20 bg-muted w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-6">
             Ready to Make a Difference?
           </h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Join thousands of students and staff who are already making their
             campus better. Every report counts towards a safer, more functional
             environment.
