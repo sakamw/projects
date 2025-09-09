@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
 import { Tooltip, ResponsiveContainer } from "recharts";
 import { cn } from "../../lib/utils";
@@ -37,7 +38,6 @@ export function ChartContainer({
 
 export function ChartTooltip({
   content,
-  defaultIndex,
   cursor = true,
 }: {
   content?: React.ReactNode;

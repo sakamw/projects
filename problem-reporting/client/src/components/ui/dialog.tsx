@@ -31,6 +31,7 @@ export function Dialog({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDialog() {
   const ctx = React.useContext(DialogContext);
   if (!ctx) throw new Error("Dialog components must be used within <Dialog>");

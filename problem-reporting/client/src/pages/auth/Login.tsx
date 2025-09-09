@@ -30,7 +30,6 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await api.loginApi({ identifier, password });
-      // Cookie holds token; we just store user for client state
       setSession(
         {
           id: user.id,
