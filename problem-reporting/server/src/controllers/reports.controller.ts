@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { PrismaClient, ReportStatus, ReportCategory } from "@prisma/client";
+import {
+  PrismaClient,
+  ReportStatus,
+  ReportCategory,
+  Prisma,
+} from "@prisma/client";
 import { z } from "zod";
 import { AuthRequest } from "../middlewares/userMiddleware";
 
@@ -24,10 +29,12 @@ export async function listReports(req: Request, res: Response) {
     const where: any = {};
     if (category) where.category = category;
     if (status) where.status = status;
-    const orderBy =
-      sort === "popular"
-        ? [{ votes: { _count: "desc" } }, { createdAt: "desc" }]
-        : [{ createdAt: "desc" }];
+    let orderBy: Prisma.ReportOrderByWithRelationInput[];
+    if (sort === "popular") {
+      orderBy = [{ votes: { _count: "desc" } }, { createdAt: "desc" }];
+    } else {
+      orderBy = [{ createdAt: "desc" }];
+    }
     const reports = await prisma.report.findMany({
       where,
       orderBy,
@@ -126,4 +133,3 @@ export async function updateReport(req: AuthRequest, res: Response) {
     res.status(500).json({ message: "Failed to update report" });
   }
 }
-

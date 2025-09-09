@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import multer from "multer";
-import { Express } from "express";
-import { PrismaClient } from "@prisma/client";
 
 export const avatarUpload = multer({ storage: multer.memoryStorage() });
 

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Resend } from "resend";
+import { sendEmail } from "../services/mailer";
 import { AuthRequest } from "../middlewares/userMiddleware";
 
 const client = new PrismaClient();
@@ -30,15 +30,22 @@ export const register = async (req: Request, res: Response) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl =
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL ||
+      "http://localhost:5173";
     const activationLink = `${frontendUrl}/activate/${user.id}/${activationToken}`;
-    if (!process.env.RESEND_API_KEY || !process.env.FROM_EMAIL) {
+    if (
+      !process.env.SMTP_HOST ||
+      !process.env.SMTP_PORT ||
+      !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS ||
+      !process.env.FROM_EMAIL
+    ) {
       res.status(500).json({ message: "Email service not configured." });
       return;
     }
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL,
+    await sendEmail({
       to: user.email,
       subject: "Activate Your Account",
       html: `<p>Welcome! Please <a href="${activationLink}">activate your account</a> to start using Fix. This link will expire in 24 hours.</p>`,
@@ -84,7 +91,10 @@ export const activateAccount = async (req: Request, res: Response) => {
         return;
       }
       await client.user.update({ where: { id }, data: { verified: true } });
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const frontendUrl =
+        process.env.FRONTEND_URL ||
+        process.env.CLIENT_URL ||
+        "http://localhost:5173";
       res.redirect(`${frontendUrl}/login?activated=1`);
       return;
     } catch (e) {
@@ -224,16 +234,22 @@ export const forgotPassword = async (req: Request, res: Response) => {
       expiresIn: "10m",
     });
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl =
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL ||
+      "http://localhost:5173";
     const link = `${frontendUrl}/reset-password/${oldUser.id}/${token}`;
-
-    if (!process.env.RESEND_API_KEY || !process.env.FROM_EMAIL) {
+    if (
+      !process.env.SMTP_HOST ||
+      !process.env.SMTP_PORT ||
+      !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS ||
+      !process.env.FROM_EMAIL
+    ) {
       res.status(500).json({ message: "Email service not configured." });
       return;
     }
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL,
+    await sendEmail({
       to: oldUser.email,
       subject: "Password Reset Request",
       html: `<p>You requested a password reset. Click <a href="${link}">here</a> to reset your password. This link will expire in 10 minutes.</p>`,
@@ -331,15 +347,22 @@ export const resendActivation = async (req: Request, res: Response) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl =
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL ||
+      "http://localhost:5173";
     const activationLink = `${frontendUrl}/activate/${user.id}/${activationToken}`;
-    if (!process.env.RESEND_API_KEY || !process.env.FROM_EMAIL) {
+    if (
+      !process.env.SMTP_HOST ||
+      !process.env.SMTP_PORT ||
+      !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS ||
+      !process.env.FROM_EMAIL
+    ) {
       res.status(500).json({ message: "Email service not configured." });
       return;
     }
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL,
+    await sendEmail({
       to: user.email,
       subject: "Activate Your Account",
       html: `<p>Please <a href="${activationLink}">activate your account</a>. This link will expire in 24 hours.</p>`,

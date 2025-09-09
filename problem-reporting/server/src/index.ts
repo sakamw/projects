@@ -17,7 +17,7 @@ dotenv.config();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["*"],
+    origin: "http://localhost:5173",
     credentials: true,
     methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -34,7 +34,7 @@ app.use("/api/votes", voteRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (_req: any, res: { send: (arg0: string) => void }) => {
-  res.send("<h1>Welcome to Problem Reports");
+  res.send("<h1>Welcome to Fast Problem Reporting and Solving");
 });
 
 const port = process.env.PORT || 4300;
