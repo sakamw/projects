@@ -2,7 +2,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -23,6 +22,7 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast(): ToastContextValue {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast must be used within <ToastProvider>");
