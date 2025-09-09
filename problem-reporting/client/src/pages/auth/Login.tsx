@@ -10,10 +10,12 @@ import {
 } from "../../components/ui/card";
 import { api } from "../../lib/api";
 import { useSessionStore } from "../../stores/session";
+import { useToast } from "../../components/ui/toast";
 
 export default function Login() {
   const navigate = useNavigate();
   const setSession = useSessionStore((s) => s.setSession);
+  const { showToast } = useToast();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,12 +41,25 @@ export default function Login() {
         },
         "cookie"
       );
-      navigate(user.isAdmin ? "/admin" : "/dashboard", { replace: true });
+      // Show success toast and redirect after a short delay
+      showToast("Login successful! Redirecting...", {
+        variant: "success",
+        durationMs: 2000,
+      });
+      window.setTimeout(() => {
+        const target = user.isAdmin ? "/admin" : "/dashboard";
+        navigate(target, { replace: true });
+        showToast(`Welcome back, ${user.firstName}!`, {
+          variant: "info",
+          durationMs: 2500,
+        });
+      }, 2000);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message =
         err?.message || "We couldn't sign you in. Please try again.";
       setError(message);
+      showToast(message, { variant: "error" });
     } finally {
       setLoading(false);
     }

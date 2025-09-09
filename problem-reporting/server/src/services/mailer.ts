@@ -5,6 +5,7 @@ const smtpPort = Number(process.env.SMTP_PORT || 587);
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
 const fromEmail = process.env.FROM_EMAIL;
+const fromName = process.env.FROM_NAME || "Fix";
 
 if (!smtpHost || !smtpPort || !smtpUser || !smtpPass || !fromEmail) {
   // Do not throw on import; controller checks and returns a clear message
@@ -29,7 +30,7 @@ export async function sendEmail({
   html,
 }: SendEmailArgs): Promise<void> {
   await transporter.sendMail({
-    from: fromEmail,
+    from: `${fromName} <${fromEmail}>`,
     to,
     subject,
     html,

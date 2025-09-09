@@ -9,9 +9,11 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { api } from "../../lib/api";
+import { useToast } from "../../components/ui/toast";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,11 +51,19 @@ export default function Register() {
         res.message ||
           "Registration successful. Check your email to activate your account."
       );
+      showToast("Registration successful! Redirecting to login...", {
+        variant: "success",
+        durationMs: 2500,
+      });
+      window.setTimeout(() => {
+        navigate("/login");
+      }, 2500);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message =
         err?.message || "We couldn't create your account. Please try again.";
       setError(message);
+      showToast(message, { variant: "error" });
     } finally {
       setLoading(false);
     }

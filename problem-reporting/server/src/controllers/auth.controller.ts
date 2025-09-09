@@ -3,6 +3,10 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mailer";
+import {
+  activationEmailHtml,
+  resetPasswordEmailHtml,
+} from "../emails/templates";
 import { AuthRequest } from "../middlewares/userMiddleware";
 
 const client = new PrismaClient();
@@ -47,8 +51,12 @@ export const register = async (req: Request, res: Response) => {
     }
     await sendEmail({
       to: user.email,
-      subject: "Activate Your Account",
-      html: `<p>Welcome! Please <a href="${activationLink}">activate your account</a> to start using Fix. This link will expire in 24 hours.</p>`,
+      subject: "Activate your account",
+      html: activationEmailHtml({
+        appName: process.env.APP_NAME || "Fix",
+        activationLink,
+        firstName: user.firstName || undefined,
+      }),
     });
     res.status(201).json({
       message:
@@ -251,8 +259,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
     await sendEmail({
       to: oldUser.email,
-      subject: "Password Reset Request",
-      html: `<p>You requested a password reset. Click <a href="${link}">here</a> to reset your password. This link will expire in 10 minutes.</p>`,
+      subject: "Reset your password",
+      html: resetPasswordEmailHtml({
+        appName: process.env.APP_NAME || "Fix",
+        resetLink: link,
+        firstName: oldUser.firstName || undefined,
+      }),
     });
 
     res.status(200).json({ message: "A reset link has been sent." });
@@ -364,8 +376,12 @@ export const resendActivation = async (req: Request, res: Response) => {
     }
     await sendEmail({
       to: user.email,
-      subject: "Activate Your Account",
-      html: `<p>Please <a href="${activationLink}">activate your account</a>. This link will expire in 24 hours.</p>`,
+      subject: "Activate your account",
+      html: activationEmailHtml({
+        appName: process.env.APP_NAME || "Fix",
+        activationLink,
+        firstName: user.firstName || undefined,
+      }),
     });
     res
       .status(200)
