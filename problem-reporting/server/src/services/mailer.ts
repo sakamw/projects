@@ -31,6 +31,7 @@ export async function sendEmail({
 }: SendEmailArgs): Promise<void> {
   await transporter.sendMail({
     from: `${fromName} <${fromEmail}>`,
+    replyTo: "noreply@fix.com",
     to,
     subject,
     html,
