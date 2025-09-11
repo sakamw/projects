@@ -51,13 +51,18 @@ export default function Register() {
         res.message ||
           "Registration successful. Check your email to activate your account."
       );
-      showToast("Registration successful! Redirecting to login...", {
-        variant: "success",
-        durationMs: 2500,
-      });
+      showToast(
+        "Registration successful! Please activate your account via email.",
+        {
+          variant: "success",
+          durationMs: 3500,
+        }
+      );
+      // Redirect to activation instructions page with email in query
       window.setTimeout(() => {
-        navigate("/login");
-      }, 2500);
+        const q = new URLSearchParams({ email }).toString();
+        navigate(`/activate-instructions?${q}`, { replace: true });
+      }, 800);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message =

@@ -21,6 +21,8 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -81,15 +83,27 @@ export default function ResetPassword() {
                 <label htmlFor="password" className="text-sm font-medium">
                   New password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className="w-full rounded-md border bg-background px-4 py-3 pr-10 outline-none focus:ring-2"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-2 my-auto text-sm text-gray-600"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               <div className="space-y-2">
                 <label
@@ -98,17 +112,31 @@ export default function ResetPassword() {
                 >
                   Confirm password
                 </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  className="w-full rounded-md border bg-background px-4 py-3 outline-none focus:ring-2"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    className="w-full rounded-md border bg-background px-4 py-3 pr-10 outline-none focus:ring-2"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-2 my-auto text-sm text-gray-600"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
                 {confirmPassword && password !== confirmPassword && (
-                  <div className="text-xs text-red-600">Passwords do not match.</div>
+                  <div className="text-xs text-red-600">
+                    Passwords do not match.
+                  </div>
                 )}
               </div>
               {error && (
@@ -116,14 +144,22 @@ export default function ResetPassword() {
                   {error}
                 </div>
               )}
-              <Button type="submit" disabled={!canSubmit || status === "submitting"} className="w-full">
+              <Button
+                type="submit"
+                disabled={!canSubmit || status === "submitting"}
+                className="w-full"
+              >
                 {status === "submitting" ? "Updating..." : "Update password"}
               </Button>
             </form>
           ) : (
             <div className="space-y-3">
-              <div className="text-sm text-red-600" role="alert">{error}</div>
-              <Button onClick={() => navigate("/forgot-password")}>Request new link</Button>
+              <div className="text-sm text-red-600" role="alert">
+                {error}
+              </div>
+              <Button onClick={() => navigate("/forgot-password")}>
+                Request new link
+              </Button>
             </div>
           )}
         </CardContent>
@@ -131,5 +167,3 @@ export default function ResetPassword() {
     </div>
   );
 }
-
-

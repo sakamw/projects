@@ -27,12 +27,22 @@ export default function Login() {
 
   useEffect(() => {
     const activated = params.get("activated");
+    const registered = params.get("registered");
     if (activated === "1") {
       showToast("Account activated successfully. Please sign in.", {
         variant: "success",
+        durationMs: 4000,
       });
+      // Clean the query so the toast doesn't reappear on refresh
+      navigate("/login", { replace: true });
+    } else if (registered === "1") {
+      showToast("Registration successful! You can now sign in.", {
+        variant: "success",
+        durationMs: 3500,
+      });
+      navigate("/login", { replace: true });
     }
-  }, [params, showToast]);
+  }, [params, showToast, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

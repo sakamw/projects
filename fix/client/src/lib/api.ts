@@ -133,6 +133,15 @@ export async function resetPasswordApi(args: {
   );
 }
 
+export async function resendActivationApi(params: {
+  email: string;
+}): Promise<{ message: string }> {
+  return request<{ message: string }>(`/auth/resend-activation`, {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
 export const api = {
   fetchReports,
   loginApi,
@@ -141,4 +150,5 @@ export const api = {
   forgotPasswordApi,
   verifyResetTokenApi,
   resetPasswordApi,
+  resendActivationApi,
 };
