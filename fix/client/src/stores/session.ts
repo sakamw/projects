@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type Role = "student" | "admin";
+export type Role = "user" | "admin";
 
 type User = {
   id: string;
@@ -23,4 +23,3 @@ export const useSessionStore = create<SessionState>((set) => ({
   setSession: (user, token) => set({ user, token }),
   clearSession: () => set({ user: null, token: null }),
 }));
-

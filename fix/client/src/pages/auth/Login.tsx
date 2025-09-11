@@ -56,7 +56,7 @@ export default function Login() {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          role: user.isAdmin ? "admin" : "student",
+          role: user.isAdmin ? "admin" : "user",
         },
         "cookie"
       );

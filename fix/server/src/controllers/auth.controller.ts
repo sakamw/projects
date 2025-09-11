@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mailer";
+import zxcvbn from "zxcvbn";
 import {
   activationEmailHtml,
   resetPasswordEmailHtml,
@@ -327,6 +328,12 @@ export const resetPassword = async (req: Request, res: Response) => {
     const { password } = req.body;
     if (!password) {
       res.status(400).json({ message: "Password is required." });
+      return;
+    }
+    // Enforce strength on reset as well
+    const result = zxcvbn(password);
+    if (result.score < 3) {
+      res.status(400).json({ message: "Please select a stronger password." });
       return;
     }
     try {

@@ -23,6 +23,16 @@ export default function ResetPassword() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [strength, setStrength] = useState<0 | 1 | 2 | 3 | 4>(0);
+
+  function evaluateStrength(value: string): 0 | 1 | 2 | 3 | 4 {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    return Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
+  }
 
   useEffect(() => {
     let active = true;
@@ -43,7 +53,11 @@ export default function ResetPassword() {
   }, [id, token]);
 
   const canSubmit =
-    status === "valid" && password.length >= 6 && password === confirmPassword;
+    status === "valid" &&
+    password.length >= 8 &&
+    password === confirmPassword &&
+    strength >= 3;
+  const isSubmitting = status === "submitting";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,7 +103,11 @@ export default function ResetPassword() {
                     type={showPassword ? "text" : "password"}
                     className="w-full rounded-md border bg-background px-4 py-3 pr-10 outline-none focus:ring-2"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPassword(val);
+                      setStrength(evaluateStrength(val));
+                    }}
                     required
                     autoComplete="new-password"
                   />
@@ -103,6 +121,34 @@ export default function ResetPassword() {
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
+                </div>
+                <div className="mt-2 text-xs">
+                  <div className="mb-1">Password strength:</div>
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={[
+                          "h-1 w-1/4 rounded",
+                          strength > i
+                            ? strength >= 3
+                              ? "bg-emerald-500"
+                              : strength === 2
+                              ? "bg-amber-500"
+                              : "bg-red-500"
+                            : "bg-secondary",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      />
+                    ))}
+                  </div>
+                  {password && strength < 3 && (
+                    <div className="mt-1 text-red-600">
+                      Use at least 8 chars, with upper, lower, number and
+                      symbol.
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -146,10 +192,10 @@ export default function ResetPassword() {
               )}
               <Button
                 type="submit"
-                disabled={!canSubmit || status === "submitting"}
+                disabled={!canSubmit || isSubmitting}
                 className="w-full"
               >
-                {status === "submitting" ? "Updating..." : "Update password"}
+                {isSubmitting ? "Updating..." : "Update password"}
               </Button>
             </form>
           ) : (
