@@ -99,4 +99,46 @@ export async function logoutApi(): Promise<{ message?: string }> {
   return request<{ message?: string }>(`/auth/logout`, { method: "POST" });
 }
 
-export const api = { fetchReports, loginApi, registerApi, logoutApi };
+export async function forgotPasswordApi(params: {
+  email: string;
+}): Promise<{ message: string }> {
+  return request<{ message: string }>(`/auth/forgot-password`, {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+export async function verifyResetTokenApi(args: {
+  id: string;
+  token: string;
+}): Promise<{ message: string }> {
+  return request<{ message: string }>(
+    `/auth/reset-password/${encodeURIComponent(args.id)}/${encodeURIComponent(
+      args.token
+    )}`,
+    { method: "GET" }
+  );
+}
+
+export async function resetPasswordApi(args: {
+  id: string;
+  token: string;
+  password: string;
+}): Promise<{ message: string }> {
+  return request<{ message: string }>(
+    `/auth/reset-password/${encodeURIComponent(args.id)}/${encodeURIComponent(
+      args.token
+    )}`,
+    { method: "POST", body: JSON.stringify({ password: args.password }) }
+  );
+}
+
+export const api = {
+  fetchReports,
+  loginApi,
+  registerApi,
+  logoutApi,
+  forgotPasswordApi,
+  verifyResetTokenApi,
+  resetPasswordApi,
+};

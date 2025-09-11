@@ -6,6 +6,8 @@ import { sendEmail } from "../services/mailer";
 import {
   activationEmailHtml,
   resetPasswordEmailHtml,
+  activationSuccessEmailHtml,
+  passwordChangedEmailHtml,
 } from "../emails/templates";
 import { AuthRequest } from "../middlewares/userMiddleware";
 
@@ -99,6 +101,26 @@ export const activateAccount = async (req: Request, res: Response) => {
         return;
       }
       await client.user.update({ where: { id }, data: { verified: true } });
+      if (
+        process.env.SMTP_HOST &&
+        process.env.SMTP_PORT &&
+        process.env.SMTP_USER &&
+        process.env.SMTP_PASS &&
+        process.env.FROM_EMAIL
+      ) {
+        try {
+          await sendEmail({
+            to: user.email,
+            subject: "Your account is now active",
+            html: activationSuccessEmailHtml({
+              appName: process.env.APP_NAME || "Fix",
+              firstName: user.firstName || undefined,
+            }),
+          });
+        } catch {
+          // fail silently; activation should not be blocked by email issues
+        }
+      }
       const frontendUrl =
         process.env.FRONTEND_URL ||
         process.env.CLIENT_URL ||
@@ -322,6 +344,26 @@ export const resetPassword = async (req: Request, res: Response) => {
         jwt.verify(token, secret);
         const hashed = await bcrypt.hash(password, 10);
         await client.user.update({ where: { id }, data: { password: hashed } });
+        if (
+          process.env.SMTP_HOST &&
+          process.env.SMTP_PORT &&
+          process.env.SMTP_USER &&
+          process.env.SMTP_PASS &&
+          process.env.FROM_EMAIL
+        ) {
+          try {
+            await sendEmail({
+              to: oldUser.email,
+              subject: "Your password was changed",
+              html: passwordChangedEmailHtml({
+                appName: process.env.APP_NAME || "Fix",
+                firstName: oldUser.firstName || undefined,
+              }),
+            });
+          } catch {
+            // do not block success on email failure
+          }
+        }
         res.status(200).json({ message: "Password reset successful." });
         return;
       } catch (e) {

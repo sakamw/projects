@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -14,6 +14,7 @@ import { useToast } from "../../components/ui/toast";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const setSession = useSessionStore((s) => s.setSession);
   const { showToast } = useToast();
   const [identifier, setIdentifier] = useState("");
@@ -23,6 +24,15 @@ export default function Login() {
   const isValid = identifier.trim().length > 0 && password.trim().length > 0;
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const activated = params.get("activated");
+    if (activated === "1") {
+      showToast("Account activated successfully. Please sign in.", {
+        variant: "success",
+      });
+    }
+  }, [params, showToast]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

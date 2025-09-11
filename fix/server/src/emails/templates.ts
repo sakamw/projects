@@ -115,3 +115,37 @@ export function resetPasswordEmailHtml(params: {
     ctaHref: params.resetLink,
   });
 }
+
+export function activationSuccessEmailHtml(params: {
+  appName?: string;
+  firstName?: string;
+}): string {
+  const greeting = params.firstName ? `Hi ${params.firstName},` : "Hello,";
+  return baseTemplate({
+    appName: params.appName ?? "Fix",
+    headline: "Your account is now active",
+    bodyHtml: `
+      <p style="margin:0 0 12px 0;">${greeting}</p>
+      <p style="margin:0 0 12px 0;">Your account has been successfully activated. You can now sign in and start using <strong>${
+        params.appName ?? "Fix"
+      }</strong>.</p>
+      <p style="margin:0;">If this wasn’t you, please contact support immediately.</p>
+    `,
+  });
+}
+
+export function passwordChangedEmailHtml(params: {
+  appName?: string;
+  firstName?: string;
+}): string {
+  const greeting = params.firstName ? `Hi ${params.firstName},` : "Hello,";
+  return baseTemplate({
+    appName: params.appName ?? "Fix",
+    headline: "Your password was changed",
+    bodyHtml: `
+      <p style="margin:0 0 12px 0;">${greeting}</p>
+      <p style="margin:0 0 12px 0;">This is a confirmation that your password was recently changed.</p>
+      <p style="margin:0;">If you did not make this change, please reset your password immediately and contact support.</p>
+    `,
+  });
+}
