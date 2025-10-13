@@ -16,7 +16,7 @@ export default function ActivateAccount() {
   }, [id, token]);
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-6">
+    <div className="flex min-h-screen items-center justify-center p-6 bg-white">
       <div className="text-sm text-muted-foreground">
         Activating your account...
       </div>

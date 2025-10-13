@@ -8,6 +8,7 @@ import reportRoutes from "./routes/reports.routes";
 import commentRoutes from "./routes/comments.routes";
 import voteRoutes from "./routes/votes.routes";
 import adminRoutes from "./routes/admin.routes";
+import uploadRoutes from "./routes/uploads.routes";
 import errorHandler from "./middlewares/errorHandler";
 
 const app: Express = express();
@@ -17,7 +18,7 @@ dotenv.config();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
     methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -26,12 +27,15 @@ app.use(
 
 app.use(cookieParser());
 app.use(morgan("dev"));
+// Static serve uploads
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/votes", voteRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 app.get("/", (_req: any, res: { send: (arg0: string) => void }) => {
   res.send("<h1>Welcome to Fast Problem Reporting and Solving");

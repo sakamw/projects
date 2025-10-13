@@ -80,8 +80,8 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-6">
-      <Card className="w-full max-w-lg">
+    <div className="flex min-h-screen items-center justify-center p-6 bg-white">
+      <Card className="w-full max-w-lg shadow-xl">
         <CardHeader>
           <CardTitle>Reset password</CardTitle>
           <CardDescription>
@@ -144,7 +144,7 @@ export default function ResetPassword() {
                     ))}
                   </div>
                   {password && strength < 3 && (
-                    <div className="mt-1 text-red-600">
+                    <div className="mt-1 text-red-700 bg-red-50 border border-red-200 rounded-md p-2">
                       Use at least 8 chars, with upper, lower, number and
                       symbol.
                     </div>
@@ -180,13 +180,13 @@ export default function ResetPassword() {
                   </button>
                 </div>
                 {confirmPassword && password !== confirmPassword && (
-                  <div className="text-xs text-red-600">
+                  <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2">
                     Passwords do not match.
                   </div>
                 )}
               </div>
               {error && (
-                <div className="text-sm text-red-600" role="alert">
+                <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3" role="alert">
                   {error}
                 </div>
               )}
@@ -200,7 +200,7 @@ export default function ResetPassword() {
             </form>
           ) : (
             <div className="space-y-3">
-              <div className="text-sm text-red-600" role="alert">
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3" role="alert">
                 {error}
               </div>
               <Button onClick={() => navigate("/forgot-password")}>

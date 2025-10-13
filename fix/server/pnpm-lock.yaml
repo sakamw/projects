@@ -47,6 +47,9 @@ importers:
       zxcvb:
         specifier: ^1.0.0
         version: 1.0.0
+      zxcvbn:
+        specifier: ^4.4.2
+        version: 4.4.2
     devDependencies:
       '@types/cookie-parser':
         specifier: ^1.4.9
@@ -1246,6 +1249,9 @@ packages:
 
   zxcvb@1.0.0:
     resolution: {integrity: sha512-wS28lHPpRUtREx+m2uWGaFZg4ZH8VZo2CTbDlgbsWX8YCy7+ZDjnatK4p7WGhcEz7eNsTGkCdjHIMFh81Fq3uA==}
+
+  zxcvbn@4.4.2:
+    resolution: {integrity: sha512-Bq0B+ixT/DMyG8kgX2xWcI5jUvCwqrMxSFam7m0lAf78nf04hv6lNCsyLYdyYTrCVMqNDY/206K7eExYCeSyUQ==}
 
 snapshots:
 
@@ -2787,3 +2793,5 @@ snapshots:
   zod@4.1.7: {}
 
   zxcvb@1.0.0: {}
+
+  zxcvbn@4.4.2: {}

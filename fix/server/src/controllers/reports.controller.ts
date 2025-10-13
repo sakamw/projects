@@ -1,10 +1,5 @@
 import { Request, Response } from "express";
-import {
-  PrismaClient,
-  ReportStatus,
-  ReportCategory,
-  Prisma,
-} from "@prisma/client";
+import { PrismaClient, ReportCategory, Prisma } from "@prisma/client";
 import { z } from "zod";
 import { AuthRequest } from "../middlewares/userMiddleware";
 
@@ -18,6 +13,7 @@ const createReportSchema = z.object({
   longitude: z.number().optional(),
   address: z.string().optional(),
   mediaUrls: z.array(z.string().url()).optional(),
+  urgency: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
 });
 
 export async function listReports(req: Request, res: Response) {
@@ -86,18 +82,18 @@ export async function createReport(req: AuthRequest, res: Response) {
       return;
     }
     const data = parse.data;
-    const created = await prisma.report.create({
-      data: {
-        userId: req.user!.id,
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        address: data.address,
-        mediaUrls: data.mediaUrls ?? [],
-      },
-    });
+    const createData: any = {
+      userId: req.user!.id,
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      address: data.address,
+      mediaUrls: data.mediaUrls ?? [],
+    };
+    if (data.urgency) createData.urgency = data.urgency;
+    const created = await prisma.report.create({ data: createData });
     res.status(201).json(created);
   } catch (e) {
     res.status(500).json({ message: "Failed to create report" });
@@ -116,17 +112,19 @@ export async function updateReport(req: AuthRequest, res: Response) {
       res.status(403).json({ message: "Not allowed" });
       return;
     }
+    const updateData: any = {
+      title: req.body.title ?? report.title,
+      description: req.body.description ?? report.description,
+      category: req.body.category ?? report.category,
+      latitude: req.body.latitude ?? report.latitude,
+      longitude: req.body.longitude ?? report.longitude,
+      address: req.body.address ?? report.address,
+      mediaUrls: req.body.mediaUrls ?? report.mediaUrls,
+    };
+    if (req.body.urgency) updateData.urgency = req.body.urgency;
     const updated = await prisma.report.update({
       where: { id },
-      data: {
-        title: req.body.title ?? report.title,
-        description: req.body.description ?? report.description,
-        category: req.body.category ?? report.category,
-        latitude: req.body.latitude ?? report.latitude,
-        longitude: req.body.longitude ?? report.longitude,
-        address: req.body.address ?? report.address,
-        mediaUrls: req.body.mediaUrls ?? report.mediaUrls,
-      },
+      data: updateData,
     });
     res.json(updated);
   } catch (e) {

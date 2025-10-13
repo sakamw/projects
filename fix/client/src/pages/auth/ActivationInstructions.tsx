@@ -43,8 +43,8 @@ export default function ActivationInstructions() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-6">
-      <Card className="w-full max-w-xl">
+    <div className="flex min-h-screen items-center justify-center p-6 bg-white">
+      <Card className="w-full max-w-xl shadow-xl">
         <CardHeader>
           <CardTitle>Verify your email to activate your account</CardTitle>
           <CardDescription>
@@ -73,7 +73,7 @@ export default function ActivationInstructions() {
               <Button variant="secondary" onClick={() => navigate("/login")}>
                 Back to login
               </Button>
-              <Button variant="secondary" onClick={() => navigate("/")}>
+              <Button variant="secondary" onClick={() => navigate("/")} className="text-primary underline">
                 Back to Home
               </Button>
             </div>

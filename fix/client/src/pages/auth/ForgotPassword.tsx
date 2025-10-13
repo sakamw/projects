@@ -41,8 +41,8 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-6">
-      <Card className="w-full max-w-lg">
+    <div className="flex min-h-screen items-center justify-center p-6 bg-white">
+      <Card className="w-full max-w-lg shadow-xl">
         <CardHeader>
           <CardTitle>Forgot password</CardTitle>
           <CardDescription>
@@ -66,12 +66,12 @@ export default function ForgotPassword() {
               />
             </div>
             {error && (
-              <div className="text-sm text-red-600" role="alert">
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3" role="alert">
                 {error}
               </div>
             )}
             {message && (
-              <div className="text-sm text-emerald-700" role="status">
+              <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md p-3" role="status">
                 {message}
               </div>
             )}

@@ -85,8 +85,8 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-6">
-      <Card className="w-full max-w-lg min-h-[420px]">
+    <div className="flex min-h-screen items-center justify-center p-6 bg-white">
+      <Card className="w-full max-w-lg min-h-[420px] shadow-xl">
         <CardHeader>
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>
@@ -152,7 +152,7 @@ export default function Login() {
               </button>
             </div>
             {error && (
-              <div className="text-sm text-red-600" role="alert">
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3" role="alert">
                 {error}
               </div>
             )}

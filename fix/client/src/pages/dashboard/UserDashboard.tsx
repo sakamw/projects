@@ -1,49 +1,116 @@
-import { Link } from "react-router-dom";
-import {
-  Home,
-  PlusCircle,
-  Files,
-  List,
-  MessageSquare,
-  ThumbsUp,
-  LineChart,
-  Settings,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { PlusCircle, List, Search, Download, RefreshCw } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
+import { StatsCard } from "../../components/StatsCard";
+import { ActivityFeed } from "../../components/ActivityFeed";
+import { QuickActions } from "../../components/QuickActions";
+import { ChartCard } from "../../components/ChartCard";
+import { ProgressIndicator } from "../../components/ProgressIndicator";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { useReportsStore } from "../../stores/reports";
 
-type NavItem = {
-  label: string;
-  to: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  active?: boolean;
-};
+// Mock data for the new components - in a real app, this would come from API
+const mockActivities = [
+  {
+    id: "1",
+    type: "report_created" as const,
+    title: "Created new report",
+    description: "Street light malfunction in downtown area",
+    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+    metadata: { reportId: "RPT-001", priority: "high" as const }
+  },
+  {
+    id: "2",
+    type: "status_changed" as const,
+    title: "Report status updated",
+    description: "Pothole repair completed",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+    metadata: { status: "RESOLVED", reportId: "RPT-002" }
+  },
+  {
+    id: "3",
+    type: "comment_added" as const,
+    title: "New comment received",
+    description: "Thank you for the quick response!",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
+    metadata: { reportId: "RPT-001" }
+  }
+];
 
-const navItems: NavItem[] = [
-  { label: "Dashboard", to: "/", icon: Home, active: true },
-  { label: "Report Issue", to: "/reports/new", icon: PlusCircle },
-  { label: "My Reports", to: "/reports/mine", icon: Files },
-  { label: "All Reports", to: "/reports", icon: List },
-  { label: "Comments", to: "/comments", icon: MessageSquare },
-  { label: "Votes", to: "/votes", icon: ThumbsUp },
-  { label: "Analytics", to: "/analytics", icon: LineChart },
+const mockQuickActions = [
+  {
+    id: "new-report",
+    label: "New Report",
+    description: "Submit a problem",
+    icon: PlusCircle,
+    onClick: () => navigate("/reports/new")
+  },
+  {
+    id: "view-reports",
+    label: "My Reports",
+    description: "View submitted reports",
+    icon: List,
+    onClick: () => navigate("/reports")
+  },
+  {
+    id: "search",
+    label: "Search",
+    description: "Find existing reports",
+    icon: Search,
+    onClick: () => {}
+  },
+  {
+    id: "export",
+    label: "Export Data",
+    description: "Download reports",
+    icon: Download,
+    onClick: () => {}
+  }
+];
+
+const mockChartData = [
+  { label: "Jan", value: 12, color: "#3b82f6" },
+  { label: "Feb", value: 19, color: "#10b981" },
+  { label: "Mar", value: 15, color: "#f59e0b" },
+  { label: "Apr", value: 25, color: "#ef4444" },
+  { label: "May", value: 22, color: "#8b5cf6" },
+  { label: "Jun", value: 30, color: "#06b6d4" }
+];
+
+const mockProgressSteps = [
+  {
+    id: "1",
+    label: "Complete profile setup",
+    description: "Add your location and preferences",
+    completed: true
+  },
+  {
+    id: "2",
+    label: "Submit first report",
+    description: "Help improve your community",
+    completed: true,
+    current: true
+  },
+  {
+    id: "3",
+    label: "Earn 10 reputation points",
+    description: "Get recognized for your contributions",
+    completed: false
+  },
+  {
+    id: "4",
+    label: "Receive helpful badge",
+    description: "Community appreciates your help",
+    completed: false
+  }
 ];
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
   const { filters, realtimeEnabled } = useReportsStore();
   const {
     data: reports,
-    isLoading,
-    error,
     refetch,
   } = useQuery({
     queryKey: ["reports", filters],
@@ -55,131 +122,113 @@ const UserDashboard = () => {
       }),
     refetchInterval: realtimeEnabled ? 5000 : false,
   });
+
+  const openReports = reports?.filter((r) => r.status === "OPEN").length ?? 0;
+  const resolvedReports = reports?.filter((r) => r.status === "RESOLVED").length ?? 0;
+  const totalVotes = reports?.reduce((acc, r) => acc + (r._count?.votes ?? 0), 0) ?? 0;
+
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                to={item.to}
-                title={item.label}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                  item.active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-              </Link>
-            );
-          })}
-        </nav>
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Link
-            to="/settings"
-            title="Settings"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-          >
-            <Settings className="h-5 w-5" />
-          </Link>
-        </nav>
-      </aside>
-
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <h1 className="text-base font-semibold">Dashboard</h1>
-          <div className="relative ml-auto flex-1 md:grow-0">
-            <input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm md:w-[200px] lg:w-[336px]"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="overflow-hidden rounded-full"
-          >
-            <img
-              src="/placeholder-user.jpg"
-              width={36}
-              height={36}
-              alt="Avatar"
-              className="h-9 w-9 rounded-full object-cover"
-            />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back! Here's your activity overview.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
           </Button>
-        </header>
+        </div>
+      </div>
 
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reports</CardTitle>
-              <CardDescription>
-                Track, create, and manage problem reports.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-4 w-4" />
-                  New Report
-                </Button>
-                <Button size="sm" variant="outline" className="h-8 gap-1">
-                  <List className="h-4 w-4" />
-                  View All
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => refetch()}>
-                  Refresh
-                </Button>
-              </div>
-              <div className="mt-4">
-                {isLoading && (
-                  <div className="text-sm text-muted-foreground">
-                    Loading reports...
-                  </div>
-                )}
-                {error && (
-                  <div className="text-sm text-red-500">
-                    Failed to load reports
-                  </div>
-                )}
-              </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Open Reports</CardTitle>
-                    <CardDescription className="text-2xl font-bold">
-                      {reports?.filter((r) => r.status === "OPEN").length ?? 0}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Resolved</CardTitle>
-                    <CardDescription className="text-2xl font-bold">
-                      {reports?.filter((r) => r.status === "RESOLVED").length ??
-                        0}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">My Votes</CardTitle>
-                    <CardDescription className="text-2xl font-bold">
-                      {reports?.reduce(
-                        (acc, r) => acc + (r._count?.votes ?? 0),
-                        0
-                      ) ?? 0}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          title="Open Reports"
+          value={openReports}
+          description="Active issues"
+          trend={{ value: 12, isPositive: false }}
+        />
+        <StatsCard
+          title="Resolved"
+          value={resolvedReports}
+          description="Completed this month"
+          trend={{ value: 8, isPositive: true }}
+        />
+        <StatsCard
+          title="My Votes"
+          value={totalVotes}
+          description="Community engagement"
+          trend={{ value: 15, isPositive: true }}
+        />
+        <StatsCard
+          title="Response Time"
+          value="2.4h"
+          description="Average resolution"
+          trend={{ value: -5, isPositive: true }}
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Column - Charts and Progress */}
+        <div className="space-y-6">
+          <ChartCard
+            title="Monthly Reports"
+            description="Reports submitted over time"
+            type="bar"
+            data={mockChartData}
+            period="Last 6 months"
+            actions={[
+              { label: "View Details", onClick: () => {} },
+              { label: "Export", onClick: () => {} }
+            ]}
+          />
+
+          <ProgressIndicator
+            title="Getting Started"
+            description="Complete these steps to maximize your experience"
+            type="steps"
+            steps={mockProgressSteps}
+            size="md"
+          />
+        </div>
+
+        {/* Middle Column - Activity Feed */}
+        <div className="space-y-6">
+          <ActivityFeed activities={mockActivities} maxHeight="500px" />
+
+          <ChartCard
+            title="Resolution Rate"
+            description="Percentage of reports resolved"
+            type="metric"
+            value="87%"
+            trend={{ value: 5, label: "increase", isPositive: true }}
+          />
+        </div>
+
+        {/* Right Column - Quick Actions */}
+        <div className="space-y-6">
+          <QuickActions
+            title="Quick Actions"
+            actions={mockQuickActions}
+            columns={2}
+          />
+
+          <ChartCard
+            title="Community Impact"
+            description="Your contribution to the community"
+            type="circular"
+            progress={{
+              current: 85,
+              target: 100,
+              unit: "points",
+              color: "primary"
+            }}
+          />
+        </div>
       </div>
     </div>
   );

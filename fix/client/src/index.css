@@ -9,18 +9,10 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0f0f23;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  border-color: #27272a;
 }
 
 body {
@@ -28,7 +20,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   width: 100%;
-  background-color: #0f0f23;
   color: #e4e4e7;
 }
 
@@ -36,73 +27,6 @@ body {
 .font-hero {
   font-family: "Sora", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-}
-
-/* Dark theme color variables */
-.bg-background {
-  background-color: #0f0f23;
-}
-.bg-muted {
-  background-color: #18181b;
-}
-.bg-muted\/40 {
-  background-color: rgba(24, 24, 27, 0.4);
-}
-.bg-card {
-  background-color: #18181b;
-}
-.bg-popover {
-  background-color: #18181b;
-}
-.bg-primary {
-  background-color: #3b82f6;
-}
-.bg-secondary {
-  background-color: #27272a;
-}
-.bg-accent {
-  background-color: #27272a;
-}
-.bg-destructive {
-  background-color: #ef4444;
-}
-
-.text-foreground {
-  color: #e4e4e7;
-}
-.text-muted-foreground {
-  color: #71717a;
-}
-.text-card-foreground {
-  color: #e4e4e7;
-}
-.text-popover-foreground {
-  color: #e4e4e7;
-}
-.text-primary-foreground {
-  color: #ffffff;
-}
-.text-secondary-foreground {
-  color: #e4e4e7;
-}
-.text-accent-foreground {
-  color: #e4e4e7;
-}
-.text-destructive-foreground {
-  color: #ffffff;
-}
-
-.border {
-  border-color: #27272a;
-}
-.border-border {
-  border-color: #27272a;
-}
-.border-input {
-  border-color: #27272a;
-}
-.border-ring {
-  border-color: #3b82f6;
 }
 
 /* Chart color variables to match shadcn charts palette */
@@ -120,4 +44,100 @@ body {
   --color-move: hsl(var(--chart-1));
   --color-calories: hsl(var(--chart-1));
   --color-time: hsl(var(--chart-2));
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* CampusFix Stormy Morning Palette */
+    --background: 178 34% 81%;
+    --foreground: 206 39% 29%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 206 39% 29%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 206 39% 29%;
+
+    /* Primary: #384959 - Dark Blue-Gray */
+    --primary: 206 39% 29%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: #6A89A7 - Medium Blue-Gray */
+    --secondary: 202 24% 53%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 178 20% 70%;
+    --muted-foreground: 206 20% 40%;
+
+    /* Accent: #88BDF2 - Light Blue */
+    --accent: 208 79% 74%;
+    --accent-foreground: 206 39% 29%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 202 20% 75%;
+    --input: 202 20% 90%;
+    --ring: 208 79% 74%;
+
+    --radius: 0.75rem;
+
+    /* Hero gradient */
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(206 39% 29%),
+      hsl(202 24% 53%)
+    );
+
+    /* Smooth transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Elegant shadows */
+    --shadow-elegant: 0 10px 40px -10px hsl(206 39% 29% / 0.3);
+    --shadow-glow: 0 0 60px hsl(208 79% 74% / 0.2);
+  }
+
+  .dark {
+    --background: 206 39% 12%;
+    --foreground: 178 34% 81%;
+
+    --card: 206 39% 20%;
+    --card-foreground: 178 34% 81%;
+
+    --popover: 206 39% 20%;
+    --popover-foreground: 178 34% 81%;
+
+    --primary: 208 79% 74%;
+    --primary-foreground: 206 39% 29%;
+
+    --secondary: 202 24% 53%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 206 20% 30%;
+    --muted-foreground: 178 20% 70%;
+
+    --accent: 208 79% 74%;
+    --accent-foreground: 206 39% 29%;
+
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 206 20% 25%;
+    --input: 206 20% 25%;
+    --ring: 208 79% 74%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

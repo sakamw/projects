@@ -77,6 +77,7 @@ model Report {
   description String
   category ReportCategory
   status ReportStatus @default(PENDING)
+  urgency ReportUrgency @default(MEDIUM)
 
   // Basic geolocation (lat/lng). Consider PostGIS in future migrations.
   latitude  Float?
@@ -104,6 +105,14 @@ model Report {
   @@index([status])
   @@index([createdAt])
   @@map("report")
+}
+
+// Urgency levels for reports
+enum ReportUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
 model ReportAssignment {

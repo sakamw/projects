@@ -75,8 +75,8 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center p-6">
-      <Card className="w-full max-w-lg">
+    <div className="flex min-h-screen items-center justify-center p-6 bg-white">
+      <Card className="w-full max-w-lg shadow-xl">
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
           <CardDescription>
@@ -194,18 +194,18 @@ export default function Register() {
                 </button>
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <div className="text-xs text-red-600">
+                <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2">
                   Passwords do not match.
                 </div>
               )}
             </div>
             {error && (
-              <div className="text-sm text-red-600" role="alert">
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3" role="alert">
                 {error}
               </div>
             )}
             {success && (
-              <div className="text-sm text-green-600" role="status">
+              <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md p-3" role="status">
                 {success}
               </div>
             )}
