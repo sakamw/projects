@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -33,11 +33,13 @@ import { Badge } from "../../components/ui/badge";
 
 const ReportDetail = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const [report, setReport] = useState<ApiReport | null>(null);
-  const [newComment, setNewComment] = useState("");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
-  const queryClient = useQueryClient();
+  const [newComment, setNewComment] = useState("");
 
   const {
     data: reportData,
@@ -47,7 +49,13 @@ const ReportDetail = () => {
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) throw new Error("Report ID is required");
-      return await api.fetchReportById(id);
+      // Check if user is authenticated to get vote information
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        return await api.fetchReportByIdWithUserVote(id);
+      } else {
+        return await api.fetchReportById(id);
+      }
     },
     enabled: !!id,
   });
@@ -64,12 +72,15 @@ const ReportDetail = () => {
 
   // Vote mutation
   const voteMutation = useMutation({
-    mutationFn: async (voteType: "up" | "down") => {
+    mutationFn: async (voteType: "up" | "down" | null) => {
       if (!id) throw new Error("Report ID is required");
       return await api.castVote(id, voteType);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["report", id] });
+      // Invalidate dashboard stats to update community engagement
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 
@@ -81,29 +92,147 @@ const ReportDetail = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["report-comments", id] });
+      // Invalidate dashboard stats to update community engagement
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       setNewComment("");
+    },
+  });
+
+  // Reply mutation
+  const replyMutation = useMutation({
+    mutationFn: async ({
+      parentCommentId,
+      text,
+    }: {
+      parentCommentId: string;
+      text: string;
+    }) => {
+      if (!id) throw new Error("Report ID is required");
+      return await api.addCommentToReport(id, text, parentCommentId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["report-comments", id] });
+      // Invalidate dashboard stats to update community engagement
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      setReplyingTo(null);
+      setReplyText("");
     },
   });
 
   useEffect(() => {
     if (reportData) {
       setReport(reportData);
+      // Set user vote from server data if available
+      if ("userVote" in reportData) {
+        setUserVote(reportData.userVote);
+      }
     }
   }, [reportData]);
 
   const handleVote = (voteType: "up" | "down") => {
-    if (userVote === voteType) {
-      setUserVote(null);
-    } else {
-      setUserVote(voteType);
-    }
-    voteMutation.mutate(voteType);
+    const newVote = userVote === voteType ? null : voteType;
+    setUserVote(newVote);
+    // Send the new vote to the server (null means unvote)
+    voteMutation.mutate(newVote);
   };
 
   const handleAddComment = () => {
     if (newComment.trim()) {
       commentMutation.mutate(newComment.trim());
     }
+  };
+
+  const handleAddReply = (parentCommentId: string) => {
+    if (replyText.trim()) {
+      replyMutation.mutate({ parentCommentId, text: replyText.trim() });
+      setReplyingTo(null);
+      setReplyText("");
+    }
+  };
+
+  const startReply = (commentId: string) => {
+    setReplyingTo(commentId);
+    setReplyText("");
+  };
+
+  // Component to render a single comment with replies
+  const CommentItem = ({
+    comment,
+    depth = 0,
+  }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    comment: any;
+    depth?: number;
+  }) => {
+    const isReplying = replyingTo === comment.id;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    function cancelReply(_event: React.MouseEvent<HTMLButtonElement>): void {
+      setReplyingTo(null);
+      setReplyText("");
+    }
+
+    return (
+      <div
+        className={`${depth > 0 ? "ml-8 border-l-2 border-muted pl-4" : ""}`}
+      >
+        <div className="border-l-2 border-muted pl-4 py-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-sm">
+              {comment.author.firstName} {comment.author.lastName}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {format(new Date(comment.createdAt), "MMM dd, yyyy")}
+            </span>
+            {depth === 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => startReply(comment.id)}
+              >
+                Reply
+              </Button>
+            )}
+          </div>
+          <p className="text-sm mb-2">{comment.text}</p>
+
+          {/* Reply input */}
+          {isReplying && (
+            <div className="flex gap-2 mt-2">
+              <textarea
+                placeholder="Write a reply..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                className="flex-1 px-3 py-2 border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md resize-none"
+                rows={2}
+              />
+              <div className="flex flex-col gap-1">
+                <Button
+                  size="sm"
+                  onClick={() => handleAddReply(comment.id)}
+                  disabled={!replyText.trim() || replyMutation.isPending}
+                >
+                  Reply
+                </Button>
+                <Button variant="outline" size="sm" onClick={cancelReply}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Render replies */}
+        {comment.replies &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          comment.replies.map((reply: any) => (
+            <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
+          ))}
+      </div>
+    );
   };
 
   const getStatusIcon = (status: string) => {
@@ -280,20 +409,49 @@ const ReportDetail = () => {
                 </p>
               </div>
 
-              {report.mediaUrls && report.mediaUrls.length > 0 && (
+              {report.mediaUrls && report.mediaUrls !== "[]" && (
                 <div>
                   <h3 className="font-semibold mb-2">Media Attachments</h3>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {report.mediaUrls.map((url, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={url}
-                          alt={`Attachment ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => window.open(url, "_blank")}
-                        />
-                      </div>
-                    ))}
+                    {(() => {
+                      try {
+                        // Try to parse as JSON array first
+                        const parsedUrls = JSON.parse(report.mediaUrls);
+                        if (Array.isArray(parsedUrls)) {
+                          return parsedUrls.map(
+                            (url: string, index: number) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={url}
+                                  alt={`Attachment ${index + 1}`}
+                                  className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => window.open(url, "_blank")}
+                                />
+                              </div>
+                            )
+                          );
+                        }
+                      } catch (error) {
+                        // If JSON parsing fails, treat as single URL string
+                        console.warn(
+                          "Failed to parse mediaUrls as JSON, treating as single URL:",
+                          error
+                        );
+                        return (
+                          <div className="relative">
+                            <img
+                              src={report.mediaUrls}
+                              alt="Attachment"
+                              className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() =>
+                                window.open(report.mediaUrls!, "_blank")
+                              }
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               )}
@@ -394,23 +552,7 @@ const ReportDetail = () => {
                     </p>
                   ) : (
                     comments.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="border-l-2 border-muted pl-4 py-2"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">
-                            {comment.author.firstName} {comment.author.lastName}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {format(
-                              new Date(comment.createdAt),
-                              "MMM dd, yyyy"
-                            )}
-                          </span>
-                        </div>
-                        <p className="text-sm">{comment.text}</p>
-                      </div>
+                      <CommentItem key={comment.id} comment={comment} />
                     ))
                   )}
                 </div>

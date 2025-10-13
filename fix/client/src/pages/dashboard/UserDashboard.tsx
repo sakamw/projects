@@ -11,17 +11,33 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription } from "../../components/ui/alert";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import { StatsCard } from "../../components/StatsCard";
 import { ActivityFeed } from "../../components/ActivityFeed";
 import { QuickActions } from "../../components/QuickActions";
 import { ChartCard } from "../../components/ChartCard";
 import { ProgressIndicator } from "../../components/ProgressIndicator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { useReportsStore } from "../../stores/reports";
 import { useDashboardStore } from "../../stores/dashboard";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Mock data for demonstration - will be replaced with real data
 const mockChartData = [
@@ -77,6 +93,42 @@ const UserDashboard = () => {
     refreshAll,
   } = useDashboardStore();
 
+  // Search functionality
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Search function
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // Search in reports
+      const reports = await api.fetchReports({
+        // Add search parameter if backend supports it
+      });
+
+      // Filter reports by search query
+      const filteredReports = reports.filter(
+        (report: any) =>
+          report.title.toLowerCase().includes(query.toLowerCase()) ||
+          report.description.toLowerCase().includes(query.toLowerCase()) ||
+          report.category.toLowerCase().includes(query.toLowerCase())
+      );
+
+      setSearchResults(filteredReports);
+    } catch (error) {
+      console.error("Search failed:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Create quick actions with navigation
   const mockQuickActions = [
     {
@@ -99,8 +151,7 @@ const UserDashboard = () => {
       description: "Find existing reports",
       icon: Search,
       onClick: () => {
-        // Open search modal or navigate to search page
-        setFilters({ ...filters, sort: "recent" });
+        // This will be handled by the search dialog trigger
       },
     },
     {
@@ -291,6 +342,7 @@ const UserDashboard = () => {
                 timestamp: new Date(a.timestamp),
               }))}
               maxHeight="500px"
+              showSearch={true}
             />
           ) : (
             <div className="text-center text-muted-foreground py-8">
@@ -312,11 +364,146 @@ const UserDashboard = () => {
 
         {/* Right Column - Quick Actions */}
         <div className="space-y-6">
-          <QuickActions
-            title="Quick Actions"
-            actions={mockQuickActions}
-            columns={2}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+                {mockQuickActions.map((action) => {
+                  const Icon = action.icon;
+
+                  if (action.id === "search") {
+                    return (
+                      <Dialog key={action.id}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="h-auto p-4 flex flex-col items-center gap-2 text-center"
+                          >
+                            <Icon className="h-6 w-6" />
+                            <div className="space-y-1">
+                              <div className="font-medium text-sm">
+                                {action.label}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {action.description}
+                              </div>
+                            </div>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                          <DialogHeader>
+                            <DialogTitle>Search Reports</DialogTitle>
+                            <DialogDescription>
+                              Find reports by title, description, or category
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Search reports..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                  setSearchQuery(e.target.value);
+                                  handleSearch(e.target.value);
+                                }}
+                                className="flex-1"
+                              />
+                              <Button
+                                onClick={() => handleSearch(searchQuery)}
+                                disabled={isSearching}
+                              >
+                                {isSearching ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Search className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+
+                            {/* Search Results */}
+                            <div className="max-h-96 overflow-y-auto">
+                              {searchResults.length > 0 ? (
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-sm">
+                                    Found {searchResults.length} result(s)
+                                  </h4>
+                                  {searchResults.map((report) => (
+                                    <div
+                                      key={report.id}
+                                      className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                                      onClick={() => {
+                                        navigate(`/reports/${report.id}`);
+                                      }}
+                                    >
+                                      <div className="font-medium text-sm">
+                                        {report.title}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        {report.description.substring(0, 100)}
+                                        ...
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs"
+                                        >
+                                          {report.category}
+                                        </Badge>
+                                        <Badge
+                                          variant={
+                                            report.status === "RESOLVED"
+                                              ? "secondary"
+                                              : report.status === "IN_PROGRESS"
+                                              ? "default"
+                                              : "destructive"
+                                          }
+                                          className="text-xs"
+                                        >
+                                          {report.status}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : searchQuery && !isSearching ? (
+                                <div className="text-center text-muted-foreground py-8">
+                                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                  <p>
+                                    No reports found matching "{searchQuery}"
+                                  </p>
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    );
+                  }
+
+                  return (
+                    <Button
+                      key={action.id}
+                      variant="outline"
+                      className="h-auto p-4 flex flex-col items-center gap-2 text-center"
+                      onClick={action.onClick}
+                    >
+                      <Icon className="h-6 w-6" />
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm">
+                          {action.label}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {action.description}
+                        </div>
+                      </div>
+                    </Button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
           {profileLoading ? (
             <div className="text-center text-muted-foreground py-4">

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -9,9 +10,12 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  Search,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { useState } from "react";
 
 interface Activity {
   id: string;
@@ -35,6 +39,7 @@ interface ActivityFeedProps {
   activities: Activity[];
   className?: string;
   maxHeight?: string;
+  showSearch?: boolean;
 }
 
 const activityIcons: Record<Activity["type"], LucideIcon> = {
@@ -57,7 +62,17 @@ export function ActivityFeed({
   activities,
   className,
   maxHeight = "400px",
+  showSearch = false,
 }: ActivityFeedProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter activities based on search term
+  const filteredActivities = activities.filter(
+    (activity) =>
+      activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const getStatusBadge = (status?: string) => {
     if (!status) return null;
 
@@ -93,17 +108,39 @@ export function ActivityFeed({
     <Card className={className}>
       <CardHeader>
         <CardTitle className="text-lg">Recent Activity</CardTitle>
+        {showSearch && (
+          <div className="relative">
+            <Input
+              placeholder="Search activities..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pr-10"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <ScrollArea style={{ maxHeight }}>
           <div className="space-y-4">
-            {activities.length === 0 ? (
+            {filteredActivities.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No recent activity</p>
+                <p>
+                  {searchTerm
+                    ? `No activities found matching "${searchTerm}"`
+                    : "No recent activity"}
+                </p>
               </div>
             ) : (
-              activities.map((activity) => {
+              filteredActivities.map((activity) => {
                 const Icon = activityIcons[activity.type];
                 const iconColor = activityColors[activity.type];
 

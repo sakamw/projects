@@ -43,7 +43,7 @@ app.get("/", (_req: any, res: { send: (arg0: string) => void }) => {
   res.send("<h1>Welcome to Fast Problem Reporting and Solving");
 });
 
-const port = process.env.PORT || 4300;
+const port = process.env.PORT || 4804;
 console.log(`App running on port ${port}`);
 app.use(errorHandler);
 app.listen(port);

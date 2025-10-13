@@ -5,7 +5,7 @@ import { AuthRequest } from "../middlewares/userMiddleware";
 
 const prisma = new PrismaClient();
 
-const voteSchema = z.object({ voteType: z.nativeEnum(VoteType) });
+const voteSchema = z.object({ voteType: z.nativeEnum(VoteType).nullable() });
 
 export async function castVote(req: AuthRequest, res: Response) {
   const { reportId } = req.params;
@@ -17,14 +17,24 @@ export async function castVote(req: AuthRequest, res: Response) {
     return;
   }
   try {
-    const upserted = await prisma.vote.upsert({
-      where: { reportId_userId: { reportId, userId: req.user!.id } },
-      update: { voteType: parse.data.voteType },
-      create: { reportId, userId: req.user!.id, voteType: parse.data.voteType },
-    });
-    res.json(upserted);
+    const { voteType } = parse.data;
+
+    if (voteType === null) {
+      // Delete the vote (unvote)
+      await prisma.vote.deleteMany({
+        where: { reportId, userId: req.user!.id },
+      });
+      res.json({ message: "Vote removed" });
+    } else {
+      // Upsert the vote
+      const upserted = await prisma.vote.upsert({
+        where: { reportId_userId: { reportId, userId: req.user!.id } },
+        update: { voteType },
+        create: { reportId, userId: req.user!.id, voteType },
+      });
+      res.json(upserted);
+    }
   } catch (e) {
     res.status(500).json({ message: "Failed to cast vote" });
   }
 }
-

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -84,8 +84,8 @@ model Report {
   longitude Float?
   address   String?
 
-  // Media stored as URLs (local or cloud storage)
-  mediaUrls String[] @default([])
+  // Media stored as URLs (local or cloud storage) - JSON string for SQLite compatibility
+  mediaUrls String? @default("[]")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -134,14 +134,18 @@ model Comment {
   id String @id @default(uuid()) @map("comment_id")
   reportId String @map("report_id")
   userId String @map("user_id")
+  parentCommentId String? @map("parent_comment_id")
   text String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   report Report @relation(fields: [reportId], references: [id])
   author User @relation(fields: [userId], references: [id])
+  parentComment Comment? @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
 
   @@index([reportId, createdAt])
+  @@index([parentCommentId])
   @@map("comment")
 }
 

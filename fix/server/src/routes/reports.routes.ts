@@ -12,5 +12,11 @@ router.get("/:id", reports.getReportById);
 router.post("/", authenticateJWT, reports.createReport);
 router.patch("/:id", authenticateJWT, reports.updateReport);
 
-export default router;
+// Authenticated report detail with user vote
+router.get(
+  "/:id/with-vote",
+  authenticateJWT,
+  reports.getReportByIdWithUserVote
+);
 
+export default router;

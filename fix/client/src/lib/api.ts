@@ -1,29 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// Reports types
 export type ApiReport = {
   id: string;
   title: string;
   description: string;
   status: string;
-  category?: string;
+  category: string;
   address?: string;
   latitude?: number;
   longitude?: number;
-  mediaUrls?: string[];
+  mediaUrls?: string; // JSON string for SQLite compatibility
   urgency?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   createdAt?: string;
+  author?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  department?: {
+    name: string;
+  };
   _count?: { votes: number; comments: number };
 };
 
 const API_BASE =
-  (import.meta as any).env?.VITE_API_URL || "http://localhost:4300/api";
+  (import.meta as any).env?.VITE_API_URL || "http://localhost:4804/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     const headers: HeadersInit = { "Content-Type": "application/json" };
 
     // Only add authorization header for protected endpoints
-    const protectedPaths = ["/dashboard", "/admin"];
-    const isProtectedPath = protectedPaths.some(p => path.startsWith(p));
+    const protectedPaths = ["/dashboard", "/admin", "/votes", "/comments"];
+    const isProtectedPath = protectedPaths.some((p) => path.startsWith(p));
 
     if (isProtectedPath) {
       const token = localStorage.getItem("authToken");
@@ -103,6 +112,14 @@ export async function fetchReportById(id: string): Promise<ApiReport> {
   return request<ApiReport>(`/reports/${id}`);
 }
 
+export async function fetchReportByIdWithUserVote(
+  id: string
+): Promise<ApiReport & { userVote: "up" | "down" | null }> {
+  return request<ApiReport & { userVote: "up" | "down" | null }>(
+    `/reports/${id}/with-vote`
+  );
+}
+
 // Comments and Votes types
 export type ApiComment = {
   id: string;
@@ -113,6 +130,7 @@ export type ApiComment = {
     firstName: string;
     lastName: string;
   };
+  replies?: ApiComment[];
 };
 
 export type ApiVote = {
@@ -125,19 +143,29 @@ export type ApiVote = {
 
 // Comments API functions
 export async function fetchCommentsForReport(reportId: string) {
-  return request<ApiComment[]>(`/comments/report/${reportId}`);
+  const response = await request<{ comments: ApiComment[]; pagination: any }>(
+    `/comments/report/${reportId}`
+  );
+  return response.comments;
 }
 
-export async function addCommentToReport(reportId: string, text: string) {
+export async function addCommentToReport(
+  reportId: string,
+  text: string,
+  parentCommentId?: string
+) {
   return request<ApiComment>(`/comments/report/${reportId}`, {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, parentCommentId }),
   });
 }
 
 // Votes API functions
-export async function castVote(reportId: string, voteType: "up" | "down") {
-  return request<ApiVote>(`/votes/report/${reportId}`, {
+export async function castVote(
+  reportId: string,
+  voteType: "up" | "down" | null
+) {
+  return request<ApiVote | { message: string }>(`/votes/report/${reportId}`, {
     method: "POST",
     body: JSON.stringify({ voteType }),
   });
@@ -164,8 +192,6 @@ export async function loginApi(params: {
   });
 
   // Store the token in localStorage after successful login
-  // Note: In a real app, you'd get the token from the response or set it via cookie
-  // For now, we'll assume the server sets an httpOnly cookie
   localStorage.setItem("authToken", "authenticated"); // Placeholder
 
   return user;
@@ -185,13 +211,15 @@ export async function registerApi(params: {
 }
 
 export async function logoutApi(): Promise<{ message?: string }> {
-  const result = await request<{ message?: string }>(`/auth/logout`, { method: "POST" });
+  const result = await request<{ message?: string }>(`/auth/logout`, {
+    method: "POST",
+  });
 
   // Clear the token from localStorage after logout
   localStorage.removeItem("authToken");
 
   // Invalidate React Query cache to ensure clean state
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // Access React Query client if available
     const queryClient = (window as any).reactQueryClient;
     if (queryClient && queryClient.invalidateQueries) {
@@ -382,6 +410,7 @@ export async function uploadFilesApi(files: File[]) {
 export const api = {
   fetchReports,
   fetchReportById,
+  fetchReportByIdWithUserVote,
   fetchCommentsForReport,
   addCommentToReport,
   castVote,

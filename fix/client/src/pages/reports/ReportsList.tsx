@@ -52,7 +52,7 @@ interface Report {
   address?: string;
   latitude?: number;
   longitude?: number;
-  mediaUrls?: string[];
+  mediaUrls?: string; // JSON string for SQLite compatibility
   urgency?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   createdAt?: string;
   author?: {

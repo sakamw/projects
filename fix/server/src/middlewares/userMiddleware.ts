@@ -22,8 +22,13 @@ export async function authenticateJWT(
     res.status(401).json({ message: "No token provided." });
     return;
   }
+
+  // Temporary debugging
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
+  console.log("Token:", token.substring(0, 50) + "...");
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback-secret");
 
     if (typeof decoded !== "object" || !decoded || !("id" in decoded)) {
       res.status(401).json({ message: "Invalid token." });
@@ -35,6 +40,7 @@ export async function authenticateJWT(
     };
     next();
   } catch (e) {
+    console.error("JWT verification error:", e);
     res.status(401).json({ message: "Invalid or expired token." });
     return;
   }
