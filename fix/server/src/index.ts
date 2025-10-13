@@ -9,6 +9,7 @@ import commentRoutes from "./routes/comments.routes";
 import voteRoutes from "./routes/votes.routes";
 import adminRoutes from "./routes/admin.routes";
 import uploadRoutes from "./routes/uploads.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 import errorHandler from "./middlewares/errorHandler";
 
 const app: Express = express();
@@ -36,6 +37,7 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/votes", voteRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/", (_req: any, res: { send: (arg0: string) => void }) => {
   res.send("<h1>Welcome to Fast Problem Reporting and Solving");

@@ -12,6 +12,8 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import ActivateAccount from "./pages/auth/ActivateAccount";
 import ActivationInstructions from "./pages/auth/ActivationInstructions";
 import CreateReport from "./pages/reports/CreateReport";
+import ReportsList from "./pages/reports/ReportsList";
+import ReportDetail from "./pages/reports/ReportDetail";
 
 function App() {
   return (
@@ -34,9 +36,10 @@ function App() {
             />
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<UserDashboard />} />
-              <Route path="/reports" element={<div>Report List</div>} />
+              <Route path="/reports" element={<ReportsList showAllReports={true} />} />
+              <Route path="/reports/mine" element={<ReportsList showAllReports={false} />} />
               <Route path="/reports/new" element={<CreateReport />} />
-              <Route path="/reports/:id" element={<div>Report Detail</div>} />
+              <Route path="/reports/:id" element={<ReportDetail />} />
             </Route>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/analytics" element={<Analytics />} />

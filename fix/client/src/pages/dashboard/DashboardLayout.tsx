@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   Home,
   PlusCircle,
@@ -8,7 +8,9 @@ import {
   ThumbsUp,
   LineChart,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { api } from "../../lib/api";
 
 type NavItem = {
   label: string;
@@ -27,6 +29,22 @@ const navItems: NavItem[] = [
 ];
 
 export default function DashboardLayout() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await api.logoutApi();
+      // Clear any local storage or state if needed
+      localStorage.removeItem("token");
+      // Redirect to login page
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Still redirect to login even if logout API fails
+      navigate("/");
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -53,6 +71,13 @@ export default function DashboardLayout() {
           >
             <Settings className="h-5 w-5" />
           </Link>
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
         </nav>
       </aside>
 

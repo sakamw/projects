@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { api } from "../../lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "../../stores/session";
 import { useToast } from "../../components/ui/toast";
 
@@ -16,7 +17,9 @@ export default function Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const setSession = useSessionStore((s) => s.setSession);
+  const clearSession = useSessionStore((s) => s.clearSession);
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,6 +52,10 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
+      // Clear any existing session and cache before logging in
+      clearSession();
+      queryClient.invalidateQueries(); // Clear all cached queries
+
       const user = await api.loginApi({ identifier, password });
       setSession(
         {
