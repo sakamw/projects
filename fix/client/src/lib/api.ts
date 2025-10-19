@@ -30,16 +30,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     const headers: HeadersInit = { "Content-Type": "application/json" };
 
-    // Only add authorization header for protected endpoints
-    const protectedPaths = ["/dashboard", "/admin", "/votes", "/comments"];
-    const isProtectedPath = protectedPaths.some((p) => path.startsWith(p));
-
-    if (isProtectedPath) {
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-    }
+    // Authentication is handled via HTTP-only cookies, no need for Authorization header
 
     const res = await fetch(`${API_BASE}${path}`, {
       headers,
@@ -68,9 +59,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         if (text) friendly = text;
       }
 
-      // If unauthorized, clear token and redirect to login
+      // If unauthorized, redirect to login (server handles cookie clearing)
       if (res.status === 401) {
-        localStorage.removeItem("authToken");
         window.location.href = "/";
         throw new Error("Authentication required");
       }
@@ -191,9 +181,7 @@ export async function loginApi(params: {
     body: JSON.stringify(params),
   });
 
-  // Store the token in localStorage after successful login
-  localStorage.setItem("authToken", "authenticated"); // Placeholder
-
+  // Server sets HTTP-only cookie, no need to store token in localStorage
   return user;
 }
 
@@ -215,8 +203,7 @@ export async function logoutApi(): Promise<{ message?: string }> {
     method: "POST",
   });
 
-  // Clear the token from localStorage after logout
-  localStorage.removeItem("authToken");
+  // Server clears the HTTP-only cookie, no need to clear localStorage
 
   // Invalidate React Query cache to ensure clean state
   if (typeof window !== "undefined") {
@@ -307,6 +294,22 @@ export type UserProfile = {
   firstName: string;
   lastName: string;
   email: string;
+  username: string;
+  phone?: string;
+  address?: string;
+  bio?: string;
+  preferences?: {
+    theme: string;
+    emailNotifications: boolean;
+    pushNotifications: boolean;
+    weeklyDigest: boolean;
+  };
+  privacy?: {
+    profileVisibility: string;
+    showEmail: boolean;
+    showPhone: boolean;
+    allowMessages: boolean;
+  };
   role: "user" | "admin";
   stats: {
     reportsCreated: number;
@@ -372,6 +375,47 @@ export async function fetchUserProfile(): Promise<UserProfile> {
   return request<UserProfile>("/dashboard/profile");
 }
 
+export async function updateUserProfile(profileData: {
+  firstName: string;
+  lastName: string;
+  username: string;
+  phone?: string;
+  address?: string;
+  bio?: string;
+}): Promise<{ message: string; user: any }> {
+  return request<{ message: string; user: any }>("/dashboard/profile", {
+    method: "PUT",
+    body: JSON.stringify(profileData),
+  });
+}
+
+export async function updateUserPreferences(preferencesData: {
+  theme: string;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  weeklyDigest: boolean;
+}): Promise<{ message: string; preferences: any }> {
+  return request<{ message: string; preferences: any }>(
+    "/dashboard/preferences",
+    {
+      method: "PUT",
+      body: JSON.stringify(preferencesData),
+    }
+  );
+}
+
+export async function updateUserPrivacy(privacyData: {
+  profileVisibility: string;
+  showEmail: boolean;
+  showPhone: boolean;
+  allowMessages: boolean;
+}): Promise<{ message: string; privacy: any }> {
+  return request<{ message: string; privacy: any }>("/dashboard/privacy", {
+    method: "PUT",
+    body: JSON.stringify(privacyData),
+  });
+}
+
 export async function fetchUserReports(): Promise<ApiReport[]> {
   return request<ApiReport[]>("/dashboard/reports");
 }
@@ -426,6 +470,9 @@ export const api = {
   fetchDashboardStats,
   fetchDashboardActivities,
   fetchUserProfile,
+  updateUserProfile,
+  updateUserPreferences,
+  updateUserPrivacy,
   fetchUserReports,
   fetchUserVotes,
 };

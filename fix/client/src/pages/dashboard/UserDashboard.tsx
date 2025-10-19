@@ -39,43 +39,65 @@ import { useReportsStore } from "../../stores/reports";
 import { useDashboardStore } from "../../stores/dashboard";
 import { useEffect, useState } from "react";
 
-// Mock data for demonstration - will be replaced with real data
-const mockChartData = [
-  { label: "Jan", value: 12, color: "#3b82f6" },
-  { label: "Feb", value: 19, color: "#10b981" },
-  { label: "Mar", value: 15, color: "#f59e0b" },
-  { label: "Apr", value: 25, color: "#ef4444" },
-  { label: "May", value: 22, color: "#8b5cf6" },
-  { label: "Jun", value: 30, color: "#06b6d4" },
-];
+// Generate weekly chart data with daily progress
+const generateWeeklyChartData = () => {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const colors = [
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#06b6d4",
+    "#84cc16",
+  ];
 
-const mockProgressSteps = [
-  {
-    id: "1",
-    label: "Complete profile setup",
-    description: "Add your location and preferences",
-    completed: true,
-  },
-  {
-    id: "2",
-    label: "Submit first report",
-    description: "Help improve your community",
-    completed: true,
-    current: true,
-  },
-  {
-    id: "3",
-    label: "Earn 10 reputation points",
-    description: "Get recognized for your contributions",
-    completed: false,
-  },
-  {
-    id: "4",
-    label: "Receive helpful badge",
-    description: "Community appreciates your help",
-    completed: false,
-  },
-];
+  return days.map((day, index) => ({
+    label: day,
+    value: Math.floor(Math.random() * 10) + 1, // Random data for now
+    color: colors[index % colors.length],
+  }));
+};
+
+const mockChartData = generateWeeklyChartData();
+
+// Generate dynamic progress steps based on user data
+const generateProgressSteps = (profile: any, stats: any) => {
+  const steps = [
+    {
+      id: "1",
+      label: "Complete profile setup",
+      description: "Add your location and preferences",
+      completed: profile?.firstName && profile?.lastName && profile?.email,
+    },
+    {
+      id: "2",
+      label: "Submit first report",
+      description: "Help improve your community",
+      completed: (stats?.totalReports || 0) > 0,
+    },
+    {
+      id: "3",
+      label: "Earn 10 reputation points",
+      description: "Get recognized for your contributions",
+      completed: (profile?.stats?.reputation || 0) >= 10,
+    },
+    {
+      id: "4",
+      label: "Receive helpful badge",
+      description: "Community appreciates your help",
+      completed: (profile?.stats?.helpfulVotes || 0) >= 5,
+    },
+  ];
+
+  // Find the first incomplete step and mark it as current
+  const currentStepIndex = steps.findIndex((step) => !step.completed);
+  if (currentStepIndex !== -1) {
+    steps[currentStepIndex] = { ...steps[currentStepIndex], current: true };
+  }
+
+  return steps;
+};
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -97,6 +119,28 @@ const UserDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Calculate real-time metrics
+  const calculateResolutionRate = () => {
+    if (!reports || reports.length === 0) return 0;
+    const resolvedCount = reports.filter(
+      (r: any) => r.status === "RESOLVED"
+    ).length;
+    return Math.round((resolvedCount / reports.length) * 100);
+  };
+
+  const calculateCommunityImpact = () => {
+    if (!profile) return 0;
+    const reputation = profile.stats?.reputation || 0;
+    const reportsCreated = profile.stats?.reportsCreated || 0;
+    const votesCast = profile.stats?.votesCast || 0;
+    const commentsMade = profile.stats?.commentsMade || 0;
+
+    // Calculate impact score based on various factors
+    const impactScore =
+      reputation * 2 + reportsCreated * 5 + votesCast * 1 + commentsMade * 3;
+    return Math.min(impactScore, 100); // Cap at 100
+  };
 
   // Search function
   const handleSearch = async (query: string) => {
@@ -127,6 +171,31 @@ const UserDashboard = () => {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  // Chart button handlers
+  const handleViewDetails = () => {
+    navigate("/reports");
+  };
+
+  const handleExportChart = () => {
+    const chartData = {
+      title: "Weekly Reports",
+      data: mockChartData,
+      exportedAt: new Date().toISOString(),
+    };
+
+    const dataStr = JSON.stringify(chartData, null, 2);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `weekly-reports-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.click();
   };
 
   // Create quick actions with navigation
@@ -289,32 +358,19 @@ const UserDashboard = () => {
         {/* Left Column - Charts and Progress */}
         <div className="space-y-6">
           <ChartCard
-            title="Monthly Reports"
-            description="Reports submitted over time"
+            title="Weekly Reports"
+            description="Reports submitted this week"
             type="bar"
             data={mockChartData}
-            period="Last 6 months"
+            period="This week"
             actions={[
               {
                 label: "View Details",
-                onClick: () => navigate("/reports"),
+                onClick: handleViewDetails,
               },
               {
                 label: "Export",
-                onClick: () => {
-                  const dataStr = JSON.stringify(mockChartData, null, 2);
-                  const dataUri =
-                    "data:application/json;charset=utf-8," +
-                    encodeURIComponent(dataStr);
-                  const exportFileDefaultName = `monthly-reports-${
-                    new Date().toISOString().split("T")[0]
-                  }.json`;
-
-                  const linkElement = document.createElement("a");
-                  linkElement.setAttribute("href", dataUri);
-                  linkElement.setAttribute("download", exportFileDefaultName);
-                  linkElement.click();
-                },
+                onClick: handleExportChart,
               },
             ]}
           />
@@ -323,7 +379,7 @@ const UserDashboard = () => {
             title="Getting Started"
             description="Complete these steps to maximize your experience"
             type="steps"
-            steps={mockProgressSteps}
+            steps={generateProgressSteps(profile, stats)}
             size="md"
           />
         </div>
@@ -357,7 +413,7 @@ const UserDashboard = () => {
             title="Resolution Rate"
             description="Percentage of reports resolved"
             type="metric"
-            value="87%"
+            value={`${calculateResolutionRate()}%`}
             trend={{ value: 5, label: "increase", isPositive: true }}
           />
         </div>
@@ -533,10 +589,10 @@ const UserDashboard = () => {
             title="Community Impact"
             description="Your contribution to the community"
             type="circular"
-            value={`${profile?.stats.reputation ?? 0}/100`}
+            value={`${calculateCommunityImpact()}/100`}
             trend={{
-              value: profile?.level?.progress ?? 0,
-              label: "progress",
+              value: calculateCommunityImpact(),
+              label: "impact",
               isPositive: true,
             }}
           />

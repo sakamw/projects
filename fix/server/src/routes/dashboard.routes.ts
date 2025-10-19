@@ -15,6 +15,13 @@ router.get("/activities", dashboard.getDashboardActivities);
 
 // User profile
 router.get("/profile", dashboard.getUserProfile);
+router.put("/profile", dashboard.updateUserProfile);
+
+// User preferences
+router.put("/preferences", dashboard.updateUserPreferences);
+
+// User privacy
+router.put("/privacy", dashboard.updateUserPrivacy);
 
 // User's reports
 router.get("/reports", dashboard.getUserReports);
