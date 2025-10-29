@@ -11,15 +11,6 @@ import {
 } from "../../components/ui/card";
 import { useToast } from "../../components/ui/toast";
 import { api } from "../../lib/api";
-import MapPicker from "../../components/MapPicker";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "../../components/ui/dialog";
 
 export default function CreateReport() {
   const navigate = useNavigate();
@@ -28,9 +19,6 @@ export default function CreateReport() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("OTHER");
   const [address, setAddress] = useState("");
-  const [latitude, setLatitude] = useState<number | "">("");
-  const [longitude, setLongitude] = useState<number | "">("");
-  const [mapOpen, setMapOpen] = useState(false);
   const [urgency, setUrgency] = useState("MEDIUM");
   const [mediaUrls] = useState<string[]>([]);
   const [files, setFiles] = useState<FileList | null>(null);
@@ -54,8 +42,6 @@ export default function CreateReport() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         category: category as any,
         address: address.trim() || undefined,
-        latitude: latitude === "" ? undefined : Number(latitude),
-        longitude: longitude === "" ? undefined : Number(longitude),
         mediaUrls: (uploadedUrls.length ? uploadedUrls : mediaUrls)
           .map((u) => u.trim())
           .filter((u) => u.length > 0),
@@ -139,58 +125,7 @@ export default function CreateReport() {
                   </select>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Location</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    readOnly
-                    value={
-                      typeof latitude === "number" &&
-                      typeof longitude === "number"
-                        ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-                        : "No location selected"
-                    }
-                    className="flex-1 rounded-md border bg-muted px-4 py-3 text-sm"
-                  />
-                  <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-                    <DialogTrigger>
-                      <Button type="button" variant="outline">
-                        Pin on map
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogTitle>Select location</DialogTitle>
-                      <DialogDescription>
-                        Click on the map to drop a pin. Drag the marker to
-                        adjust.
-                      </DialogDescription>
-                      <div className="mt-2">
-                        <MapPicker
-                          center={
-                            typeof latitude === "number" &&
-                            typeof longitude === "number"
-                              ? {
-                                  lat: latitude as number,
-                                  lng: longitude as number,
-                                }
-                              : undefined
-                          }
-                          onPick={(c) => {
-                            setLatitude(c.lat);
-                            setLongitude(c.lng);
-                          }}
-                          height="400px"
-                        />
-                      </div>
-                      <DialogFooter>
-                        <Button type="button" onClick={() => setMapOpen(false)}>
-                          Done
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Images</label>
                 <input

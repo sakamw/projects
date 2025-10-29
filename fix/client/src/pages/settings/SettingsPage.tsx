@@ -221,8 +221,10 @@ const SettingsPage = () => {
       currentPassword: string;
       newPassword: string;
     }) => {
-      // In a real app, this would call the backend API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await api.changePasswordApi({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
       return { success: true };
     },
     onSuccess: () => {
@@ -233,8 +235,9 @@ const SettingsPage = () => {
         confirmPassword: "",
       });
     },
-    onError: () => {
-      showToast("Failed to change password", { variant: "destructive" });
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Failed to change password";
+      showToast(errorMessage, { variant: "destructive" });
     },
   });
 

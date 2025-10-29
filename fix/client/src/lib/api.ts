@@ -251,6 +251,20 @@ export async function resetPasswordApi(args: {
   );
 }
 
+// Auth: change password (authenticated)
+export async function changePasswordApi(args: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<{ message?: string }> {
+  return request<{ message?: string }>(`/auth/password`, {
+    method: "POST",
+    body: JSON.stringify({
+      currentPassword: args.currentPassword,
+      newPassword: args.newPassword,
+    }),
+  });
+}
+
 export async function resendActivationApi(params: {
   email: string;
 }): Promise<{ message: string }> {
@@ -464,6 +478,7 @@ export const api = {
   forgotPasswordApi,
   verifyResetTokenApi,
   resetPasswordApi,
+  changePasswordApi,
   resendActivationApi,
   createReportApi,
   uploadFilesApi,

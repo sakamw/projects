@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { format, subDays } from "date-fns";
 import {
   BarChart3,
   TrendingUp,
@@ -28,29 +28,109 @@ import { Select } from "../../components/ui/select";
 import { ChartCard } from "../../components/ChartCard";
 import { api } from "../../lib/api";
 
-interface AnalyticsData {
-  totalReports: number;
-  resolvedReports: number;
-  pendingReports: number;
-  totalVotes: number;
-  totalComments: number;
-  weeklyData: Array<{
-    date: string;
-    reports: number;
-    votes: number;
-    comments: number;
-  }>;
-  categoryBreakdown: Array<{
-    category: string;
-    count: number;
-    percentage: number;
-  }>;
-  topContributors: Array<{
-    name: string;
-    reports: number;
-    votes: number;
-    comments: number;
-  }>;
+type AnalyticsData = ReturnType<typeof computeAnalytics>;
+
+function computeAnalytics(
+  reports: Array<{
+    id: string;
+    status?: string;
+    category?: string;
+    createdAt?: string;
+    _count?: { votes?: number; comments?: number };
+    author?: { firstName?: string; lastName?: string } | null;
+  }>,
+  days: number,
+  categoryFilter: string
+) {
+  const since = subDays(new Date(), days - 1);
+  const filtered = reports.filter((r) => {
+    const inCategory =
+      categoryFilter === "all" || r.category === categoryFilter;
+    if (!inCategory) return false;
+    if (!r.createdAt) return true;
+    return new Date(r.createdAt) >= since;
+  });
+
+  const totalReports = filtered.length;
+  const resolvedReports = filtered.filter(
+    (r) => r.status === "RESOLVED"
+  ).length;
+  const pendingReports = filtered.filter((r) => r.status !== "RESOLVED").length;
+  const totalVotes = filtered.reduce((a, r) => a + (r._count?.votes ?? 0), 0);
+  const totalComments = filtered.reduce(
+    (a, r) => a + (r._count?.comments ?? 0),
+    0
+  );
+
+  const weeklyData = Array.from({ length: days }, (_, i) => {
+    const date = subDays(new Date(), days - 1 - i);
+    const label = format(date, "MMM dd");
+    const reportsCount = filtered.filter((r) => {
+      return (
+        r.createdAt &&
+        format(new Date(r.createdAt), "yyyy-MM-dd") ===
+          format(date, "yyyy-MM-dd")
+      );
+    }).length;
+    const votesCount = 0; // Not tracked per-day with current API; omit or estimate if needed
+    const commentsCount = 0;
+    return {
+      date: label,
+      reports: reportsCount,
+      votes: votesCount,
+      comments: commentsCount,
+    };
+  });
+
+  const categoryMap = new Map<string, number>();
+  for (const r of filtered) {
+    const c = r.category || "OTHER";
+    categoryMap.set(c, (categoryMap.get(c) || 0) + 1);
+  }
+  const categoryBreakdown = Array.from(categoryMap.entries()).map(
+    ([category, count]) => ({
+      category,
+      count,
+      percentage: totalReports ? Math.round((count / totalReports) * 100) : 0,
+    })
+  );
+
+  const contributors = new Map<
+    string,
+    { name: string; reports: number; votes: number; comments: number }
+  >();
+  for (const r of filtered) {
+    const name = `${r.author?.firstName || "Unknown"} ${
+      r.author?.lastName || ""
+    }`.trim();
+    const curr = contributors.get(name) || {
+      name,
+      reports: 0,
+      votes: 0,
+      comments: 0,
+    };
+    curr.reports += 1;
+    curr.votes += r._count?.votes || 0;
+    curr.comments += r._count?.comments || 0;
+    contributors.set(name, curr);
+  }
+  const topContributors = Array.from(contributors.values())
+    .sort(
+      (a, b) =>
+        b.reports + b.votes + b.comments - (a.reports + a.votes + a.comments)
+    )
+    .slice(0, 10);
+
+  return {
+    totalReports,
+    resolvedReports,
+    pendingReports,
+    totalVotes,
+    totalComments,
+    weeklyData,
+    categoryBreakdown,
+    topContributors,
+  } as const;
 }
 
 const AnalyticsPage = () => {
@@ -58,50 +138,23 @@ const AnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState("week");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  // Mock analytics data - in a real app, this would come from the backend
+  // Fetch all reports and build analytics live on the client
   const {
-    data: analyticsData,
+    data: reports,
     isLoading,
     error,
+    refetch,
   } = useQuery({
-    queryKey: ["analytics", timeRange, categoryFilter],
-    queryFn: async (): Promise<AnalyticsData> => {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Generate mock data based on time range
-      const days = timeRange === "week" ? 7 : timeRange === "month" ? 30 : 90;
-      const weeklyData = Array.from({ length: days }, (_, i) => ({
-        date: format(subDays(new Date(), days - 1 - i), "MMM dd"),
-        reports: Math.floor(Math.random() * 10) + 1,
-        votes: Math.floor(Math.random() * 20) + 5,
-        comments: Math.floor(Math.random() * 15) + 2,
-      }));
-
-      return {
-        totalReports: 156,
-        resolvedReports: 89,
-        pendingReports: 67,
-        totalVotes: 1247,
-        totalComments: 892,
-        weeklyData,
-        categoryBreakdown: [
-          { category: "INFRASTRUCTURE", count: 45, percentage: 29 },
-          { category: "IT", count: 32, percentage: 21 },
-          { category: "SANITATION", count: 28, percentage: 18 },
-          { category: "SECURITY", count: 25, percentage: 16 },
-          { category: "ELECTRICAL", count: 18, percentage: 12 },
-          { category: "WATER", count: 8, percentage: 5 },
-        ],
-        topContributors: [
-          { name: "John Doe", reports: 12, votes: 45, comments: 23 },
-          { name: "Jane Smith", reports: 8, votes: 38, comments: 19 },
-          { name: "Mike Johnson", reports: 6, votes: 29, comments: 15 },
-          { name: "Sarah Wilson", reports: 5, votes: 22, comments: 12 },
-        ],
-      };
-    },
+    queryKey: ["analytics-reports"],
+    queryFn: () => api.fetchReports({}),
+    refetchInterval: 10000,
   });
+
+  const analyticsData: AnalyticsData | undefined = useMemo(() => {
+    if (!reports) return undefined;
+    const days = timeRange === "week" ? 7 : timeRange === "month" ? 30 : 90;
+    return computeAnalytics(reports, days, categoryFilter);
+  }, [reports, timeRange, categoryFilter]);
 
   const handleExportData = () => {
     if (!analyticsData) return;
@@ -172,9 +225,11 @@ const AnalyticsPage = () => {
     );
   }
 
-  const resolutionRate = Math.round(
-    (analyticsData.resolvedReports / analyticsData.totalReports) * 100
-  );
+  const resolutionRate = analyticsData.totalReports
+    ? Math.round(
+        (analyticsData.resolvedReports / analyticsData.totalReports) * 100
+      )
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -309,9 +364,17 @@ const AnalyticsPage = () => {
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard
           title="Activity Over Time"
-          description={`Community activity for the last ${
-            timeRange === "week" ? "7" : timeRange === "month" ? "30" : "90"
-          } days`}
+          description={
+            analyticsData.totalReports > 0
+              ? `Community activity for the last ${
+                  timeRange === "week"
+                    ? "7"
+                    : timeRange === "month"
+                    ? "30"
+                    : "90"
+                } days`
+              : "No activity in this period"
+          }
           type="line"
           data={analyticsData.weeklyData.map((d) => ({
             label: d.date,
@@ -325,8 +388,12 @@ const AnalyticsPage = () => {
 
         <ChartCard
           title="Category Breakdown"
-          description="Reports by category"
-          type="doughnut"
+          description={
+            analyticsData.categoryBreakdown.length > 0
+              ? "Reports by category"
+              : "No reports to categorize"
+          }
+          type="pie"
           data={analyticsData.categoryBreakdown.map((c) => ({
             label: c.category,
             value: c.count,
@@ -346,6 +413,11 @@ const AnalyticsPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {analyticsData.topContributors.length === 0 && (
+              <div className="text-center text-muted-foreground py-6">
+                No contributors yet in this period
+              </div>
+            )}
             {analyticsData.topContributors.map((contributor, index) => (
               <div
                 key={index}

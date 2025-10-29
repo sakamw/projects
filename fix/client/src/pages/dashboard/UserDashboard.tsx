@@ -1,47 +1,33 @@
 import { useNavigate } from "react-router-dom";
-import {
-  PlusCircle,
-  List,
-  Search,
-  Download,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  ThumbsUp,
-  Clock,
-} from "lucide-react";
+import { RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription } from "../../components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { StatsCard } from "../../components/StatsCard";
-import { ActivityFeed } from "../../components/ActivityFeed";
-import { QuickActions } from "../../components/QuickActions";
 import { ChartCard } from "../../components/ChartCard";
-import { ProgressIndicator } from "../../components/ProgressIndicator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../components/ui/dialog";
+import { DashboardHeader } from "../../components/dashboard/DashboardHeader";
+import { StatsSection } from "../../components/dashboard/StatsSection";
+import { WeeklyReportsCard } from "../../components/dashboard/WeeklyReportsCard";
+import { GettingStartedCard } from "../../components/dashboard/GettingStartedCard";
+import { ActivitySection } from "../../components/dashboard/ActivitySection";
+import { RightPanel } from "../../components/dashboard/RightPanel";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { useReportsStore } from "../../stores/reports";
 import { useDashboardStore } from "../../stores/dashboard";
 import { useEffect, useState } from "react";
 
-// Generate weekly chart data with daily progress
-const generateWeeklyChartData = () => {
+// Generate weekly chart data from actual reports
+const buildWeeklyChartData = (reports: any[] | undefined) => {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const counts = new Array(7).fill(0);
+  if (reports && reports.length > 0) {
+    for (const r of reports) {
+      if (!r?.createdAt) continue;
+      const d = new Date(r.createdAt);
+      const jsDay = d.getDay(); // 0=Sun .. 6=Sat
+      const idx = jsDay === 0 ? 6 : jsDay - 1; // Map so 0->Sun at end
+      counts[idx] += 1;
+    }
+  }
   const colors = [
     "#3b82f6",
     "#10b981",
@@ -51,19 +37,26 @@ const generateWeeklyChartData = () => {
     "#06b6d4",
     "#84cc16",
   ];
-
   return days.map((day, index) => ({
     label: day,
-    value: Math.floor(Math.random() * 10) + 1, // Random data for now
+    value: counts[index],
     color: colors[index % colors.length],
   }));
 };
 
-const mockChartData = generateWeeklyChartData();
-
-// Generate dynamic progress steps based on user data
-const generateProgressSteps = (profile: any, stats: any) => {
+// Generate dynamic progress steps based on user data and connection state
+const generateProgressSteps = (
+  profile: any,
+  stats: any,
+  isConnected: boolean
+) => {
   const steps = [
+    {
+      id: "0",
+      label: "Connected to server",
+      description: "Live data and actions are available",
+      completed: isConnected,
+    },
     {
       id: "1",
       label: "Complete profile setup",
@@ -181,7 +174,7 @@ const UserDashboard = () => {
   const handleExportChart = () => {
     const chartData = {
       title: "Weekly Reports",
-      data: mockChartData,
+      data: buildWeeklyChartData(reports),
       exportedAt: new Date().toISOString(),
     };
 
@@ -198,52 +191,7 @@ const UserDashboard = () => {
     linkElement.click();
   };
 
-  // Create quick actions with navigation
-  const mockQuickActions = [
-    {
-      id: "new-report",
-      label: "New Report",
-      description: "Submit a problem",
-      icon: PlusCircle,
-      onClick: () => navigate("/reports/new"),
-    },
-    {
-      id: "view-reports",
-      label: "My Reports",
-      description: "View submitted reports",
-      icon: List,
-      onClick: () => navigate("/reports/mine"),
-    },
-    {
-      id: "search",
-      label: "Search",
-      description: "Find existing reports",
-      icon: Search,
-      onClick: () => {
-        // This will be handled by the search dialog trigger
-      },
-    },
-    {
-      id: "export",
-      label: "Export Data",
-      description: "Download reports",
-      icon: Download,
-      onClick: () => {
-        // Export functionality - implement CSV/JSON download
-        const dataStr = JSON.stringify(reports, null, 2);
-        const dataUri =
-          "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-        const exportFileDefaultName = `reports-${
-          new Date().toISOString().split("T")[0]
-        }.json`;
-
-        const linkElement = document.createElement("a");
-        linkElement.setAttribute("href", dataUri);
-        linkElement.setAttribute("download", exportFileDefaultName);
-        linkElement.click();
-      },
-    },
-  ];
+  // Quick actions moved to RightPanel component
 
   const { data: reports, refetch } = useQuery({
     queryKey: ["reports", filters],
@@ -256,11 +204,28 @@ const UserDashboard = () => {
     refetchInterval: realtimeEnabled ? 5000 : false,
   });
 
+  // Live connection status: ping a lightweight public endpoint
+  const { isLoading: connLoading, isError: connError } = useQuery({
+    queryKey: ["live-connection"],
+    queryFn: () => api.fetchReports({}),
+    retry: 0,
+    refetchInterval: 10000,
+    staleTime: 5000,
+  });
+
   // Load dashboard data on mount
   useEffect(() => {
     refreshAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Poll dashboard data for real-time values
+  useEffect(() => {
+    const id = setInterval(() => {
+      refreshAll();
+    }, 10000);
+    return () => clearInterval(id);
+  }, [refreshAll]);
 
   const openReports = reports?.filter((r) => r.status === "OPEN").length ?? 0;
   const resolvedReports =
@@ -275,21 +240,11 @@ const UserDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back! Here's your activity overview.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-      </div>
+      <DashboardHeader
+        connLoading={connLoading}
+        connError={!!connError}
+        onRefresh={handleRefresh}
+      />
 
       {/* Error States */}
       {statsError && (
@@ -319,282 +274,84 @@ const UserDashboard = () => {
         </Alert>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Open Reports"
-          value={statsLoading ? "..." : stats?.openReports ?? openReports}
-          description="Active issues"
-          trend={{ value: 12, isPositive: false }}
-          icon={List}
-        />
-        <StatsCard
-          title="Resolved"
-          value={
-            statsLoading ? "..." : stats?.resolvedReports ?? resolvedReports
-          }
-          description="Completed this month"
-          trend={{ value: 8, isPositive: true }}
-          icon={CheckCircle}
-        />
-        <StatsCard
-          title="My Votes"
-          value={statsLoading ? "..." : stats?.totalVotes ?? totalVotes}
-          description="Community engagement"
-          trend={{ value: 15, isPositive: true }}
-          icon={ThumbsUp}
-        />
-        <StatsCard
-          title="Response Time"
-          value={statsLoading ? "..." : stats?.avgResolutionTime ?? "2.4h"}
-          description="Average resolution"
-          trend={{ value: -5, isPositive: true }}
-          icon={Clock}
-        />
-      </div>
+      <StatsSection
+        statsLoading={!!statsLoading}
+        openReports={stats?.openReports ?? openReports}
+        resolvedReports={stats?.resolvedReports ?? resolvedReports}
+        totalVotes={stats?.totalVotes ?? totalVotes}
+        avgResolutionTime={stats?.avgResolutionTime ?? "2.4h"}
+      />
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column - Charts and Progress */}
         <div className="space-y-6">
-          <ChartCard
-            title="Weekly Reports"
-            description="Reports submitted this week"
-            type="bar"
-            data={mockChartData}
-            period="This week"
-            actions={[
-              {
-                label: "View Details",
-                onClick: handleViewDetails,
-              },
-              {
-                label: "Export",
-                onClick: handleExportChart,
-              },
-            ]}
+          <WeeklyReportsCard
+            description={
+              (reports?.length || 0) > 0
+                ? "Reports submitted this week"
+                : "No reports yet this week"
+            }
+            chartData={buildWeeklyChartData(reports)}
+            onViewDetails={handleViewDetails}
+            onExport={handleExportChart}
           />
 
-          <ProgressIndicator
-            title="Getting Started"
-            description="Complete these steps to maximize your experience"
-            type="steps"
-            steps={generateProgressSteps(profile, stats)}
-            size="md"
+          <GettingStartedCard
+            steps={generateProgressSteps(
+              profile,
+              stats,
+              !connError && !connLoading
+            )}
           />
         </div>
 
         {/* Middle Column - Activity Feed */}
         <div className="space-y-6">
-          {activitiesLoading ? (
-            <div className="text-center text-muted-foreground py-8">
-              <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
-              Loading activities...
-            </div>
-          ) : activities.length > 0 ? (
-            <ActivityFeed
-              activities={activities.map((a) => ({
-                ...a,
-                timestamp: new Date(a.timestamp),
-              }))}
-              maxHeight="500px"
-              showSearch={true}
-            />
-          ) : (
-            <div className="text-center text-muted-foreground py-8">
-              <div className="text-sm">No recent activity</div>
-              <div className="text-xs mt-1">
-                Your recent actions will appear here
-              </div>
-            </div>
-          )}
+          <ActivitySection
+            activities={activities.map((a) => ({
+              ...a,
+              timestamp: new Date(a.timestamp),
+            }))}
+            loading={!!activitiesLoading}
+          />
 
           <ChartCard
             title="Resolution Rate"
-            description="Percentage of reports resolved"
+            description={
+              (reports?.length || 0) > 0
+                ? "Percentage of reports resolved"
+                : "No reports yet"
+            }
             type="metric"
             value={`${calculateResolutionRate()}%`}
-            trend={{ value: 5, label: "increase", isPositive: true }}
           />
         </div>
 
-        {/* Right Column - Quick Actions */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-                {mockQuickActions.map((action) => {
-                  const Icon = action.icon;
-
-                  if (action.id === "search") {
-                    return (
-                      <Dialog key={action.id}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="h-auto p-4 flex flex-col items-center gap-2 text-center"
-                          >
-                            <Icon className="h-6 w-6" />
-                            <div className="space-y-1">
-                              <div className="font-medium text-sm">
-                                {action.label}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {action.description}
-                              </div>
-                            </div>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
-                          <DialogHeader>
-                            <DialogTitle>Search Reports</DialogTitle>
-                            <DialogDescription>
-                              Find reports by title, description, or category
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Search reports..."
-                                value={searchQuery}
-                                onChange={(e) => {
-                                  setSearchQuery(e.target.value);
-                                  handleSearch(e.target.value);
-                                }}
-                                className="flex-1"
-                              />
-                              <Button
-                                onClick={() => handleSearch(searchQuery)}
-                                disabled={isSearching}
-                              >
-                                {isSearching ? (
-                                  <RefreshCw className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Search className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-
-                            {/* Search Results */}
-                            <div className="max-h-96 overflow-y-auto">
-                              {searchResults.length > 0 ? (
-                                <div className="space-y-2">
-                                  <h4 className="font-medium text-sm">
-                                    Found {searchResults.length} result(s)
-                                  </h4>
-                                  {searchResults.map((report) => (
-                                    <div
-                                      key={report.id}
-                                      className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                                      onClick={() => {
-                                        navigate(`/reports/${report.id}`);
-                                      }}
-                                    >
-                                      <div className="font-medium text-sm">
-                                        {report.title}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        {report.description.substring(0, 100)}
-                                        ...
-                                      </div>
-                                      <div className="flex items-center gap-2 mt-2">
-                                        <Badge
-                                          variant="outline"
-                                          className="text-xs"
-                                        >
-                                          {report.category}
-                                        </Badge>
-                                        <Badge
-                                          variant={
-                                            report.status === "RESOLVED"
-                                              ? "secondary"
-                                              : report.status === "IN_PROGRESS"
-                                              ? "default"
-                                              : "destructive"
-                                          }
-                                          className="text-xs"
-                                        >
-                                          {report.status}
-                                        </Badge>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : searchQuery && !isSearching ? (
-                                <div className="text-center text-muted-foreground py-8">
-                                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                  <p>
-                                    No reports found matching "{searchQuery}"
-                                  </p>
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    );
-                  }
-
-                  return (
-                    <Button
-                      key={action.id}
-                      variant="outline"
-                      className="h-auto p-4 flex flex-col items-center gap-2 text-center"
-                      onClick={action.onClick}
-                    >
-                      <Icon className="h-6 w-6" />
-                      <div className="space-y-1">
-                        <div className="font-medium text-sm">
-                          {action.label}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {action.description}
-                        </div>
-                      </div>
-                    </Button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {profileLoading ? (
-            <div className="text-center text-muted-foreground py-4">
-              <RefreshCw className="h-6 w-6 mx-auto mb-2 animate-spin" />
-              Loading profile...
-            </div>
-          ) : profile ? (
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <div className="text-sm font-medium mb-2">Welcome back!</div>
-              <div className="text-sm text-muted-foreground">
-                {profile.firstName} {profile.lastName}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {profile.stats.reportsCreated} reports created
-              </div>
-            </div>
-          ) : (
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <div className="text-sm font-medium mb-2">Profile</div>
-              <div className="text-sm text-muted-foreground">
-                Sign in to view your profile
-              </div>
-            </div>
-          )}
+          <RightPanel
+            reports={reports as any}
+            onNewReport={() => navigate("/reports/new")}
+            onViewMyReports={() => navigate("/reports/mine")}
+            profile={profile as any}
+            profileLoading={!!profileLoading}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isSearching={isSearching}
+            handleSearch={handleSearch}
+            searchResults={searchResults as any}
+            navigateToReport={(id) => navigate(`/reports/${id}`)}
+          />
 
           <ChartCard
             title="Community Impact"
-            description="Your contribution to the community"
+            description={
+              calculateCommunityImpact() > 0
+                ? "Your contribution to the community"
+                : "Engage by creating reports, voting, or commenting"
+            }
             type="circular"
             value={`${calculateCommunityImpact()}/100`}
-            trend={{
-              value: calculateCommunityImpact(),
-              label: "impact",
-              isPositive: true,
-            }}
           />
         </div>
       </div>
