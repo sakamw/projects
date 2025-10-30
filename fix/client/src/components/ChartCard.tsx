@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "../lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 interface ChartData {
   label: string;
@@ -64,6 +65,17 @@ export function ChartCard({
 }: ChartCardProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const ChartIcon = chartIcons[type];
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
 
   const getTrendColor = () => {
     if (!trend) return "";
@@ -121,9 +133,9 @@ export function ChartCard({
   };
 
   return (
-<Card className={cn("relative overflow-hidden border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50 shadow-sm", className)}>
+    <Card className={cn("relative overflow-visible border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50 shadow-sm", className)}>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
-      <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="relative z-50 flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center space-x-2">
           {Icon && (
             <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
@@ -132,7 +144,7 @@ export function ChartCard({
           )}
           <CardTitle className="text-base">{title}</CardTitle>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2" ref={menuRef}>
           {period && (
             <Badge variant="outline" className="text-xs">
               <Calendar className="h-3 w-3 mr-1" />
@@ -140,9 +152,39 @@ export function ChartCard({
             </Badge>
           )}
           {actions.length > 0 && (
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="Open actions"
+                onClick={() => setMenuOpen((v) => !v)}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-9 z-50 w-44 rounded-lg border bg-popover/90 backdrop-blur p-1 shadow-xl"
+                >
+                  {actions.map((a, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        a.onClick();
+                        setMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-primary/10"
+                    >
+                      {a.icon && <a.icon className="h-3.5 w-3.5" />}
+                      {a.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </CardHeader>

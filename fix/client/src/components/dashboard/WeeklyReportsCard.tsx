@@ -1,4 +1,5 @@
 import { ChartCard } from "../ChartCard";
+import { List, Download } from "lucide-react";
 
 interface WeeklyReportsCardProps {
   description: string;
@@ -21,8 +22,8 @@ export function WeeklyReportsCard({
       data={chartData}
       period="This week"
       actions={[
-        { label: "View Details", onClick: onViewDetails },
-        { label: "Export", onClick: onExport },
+        { label: "View Details", onClick: onViewDetails, icon: List },
+        { label: "Export", onClick: onExport, icon: Download },
       ]}
     />
   );

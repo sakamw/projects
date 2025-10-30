@@ -69,12 +69,12 @@ export function StatsCard({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50 transition-transform hover:translate-y-[-2px] hover:shadow-lg",
+        "relative overflow-visible border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50 transition-transform hover:translate-y-[-2px] hover:shadow-lg",
         className
       )}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-50">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className="flex items-center gap-1" ref={menuRef}>
           {Icon && (
@@ -97,7 +97,7 @@ export function StatsCard({
               {open && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-10 z-20 w-44 rounded-lg border bg-popover/90 backdrop-blur p-1 shadow-xl"
+                  className="absolute right-0 top-10 z-50 w-44 rounded-lg border bg-popover/90 backdrop-blur p-1 shadow-xl"
                 >
                   {actions.map((a, i) => (
                     <button
