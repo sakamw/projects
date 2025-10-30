@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ActivityFeed } from "../ActivityFeed";
 import { RefreshCw } from "lucide-react";
 
@@ -22,7 +21,8 @@ export function ActivitySection({ activities, loading }: ActivitySectionProps) {
         </div>
       ) : activities.length > 0 ? (
         <ActivityFeed
-          activities={activities}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          activities={activities as any}
           maxHeight="500px"
           showSearch={true}
         />

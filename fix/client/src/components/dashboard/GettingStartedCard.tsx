@@ -5,7 +5,7 @@ interface GettingStartedCardProps {
     id: string;
     label: string;
     description?: string;
-    completed?: boolean;
+    completed: boolean;
     current?: boolean;
   }>;
 }

@@ -70,5 +70,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Export the context for use in the hook
 export { ThemeContext };

@@ -30,8 +30,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     const headers: HeadersInit = { "Content-Type": "application/json" };
 
-    // Authentication is handled via HTTP-only cookies, no need for Authorization header
-
     const res = await fetch(`${API_BASE}${path}`, {
       headers,
       credentials: "include", // Also send cookies as fallback
@@ -202,8 +200,6 @@ export async function logoutApi(): Promise<{ message?: string }> {
   const result = await request<{ message?: string }>(`/auth/logout`, {
     method: "POST",
   });
-
-  // Server clears the HTTP-only cookie, no need to clear localStorage
 
   // Invalidate React Query cache to ensure clean state
   if (typeof window !== "undefined") {

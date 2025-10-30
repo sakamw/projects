@@ -106,7 +106,7 @@ export function RightPanel({
               if (action.id === "search") {
                 return (
                   <Dialog key={action.id}>
-                    <DialogTrigger asChild>
+                    <DialogTrigger>
                       <Button
                         variant="outline"
                         className="h-auto p-4 flex flex-col items-center gap-2 text-center"

@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
-import { RefreshCw, AlertCircle } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 import { ChartCard } from "../../components/ChartCard";
 import { DashboardHeader } from "../../components/dashboard/DashboardHeader";
@@ -45,12 +45,20 @@ const buildWeeklyChartData = (reports: any[] | undefined) => {
 };
 
 // Generate dynamic progress steps based on user data and connection state
+type ProgressStep = {
+  id: string;
+  label: string;
+  description: string;
+  completed: any;
+  current?: boolean;
+};
+
 const generateProgressSteps = (
   profile: any,
   stats: any,
   isConnected: boolean
-) => {
-  const steps = [
+): ProgressStep[] => {
+  const steps: ProgressStep[] = [
     {
       id: "0",
       label: "Connected to server",
@@ -94,7 +102,7 @@ const generateProgressSteps = (
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { filters, setFilters, realtimeEnabled } = useReportsStore();
+  const { filters, realtimeEnabled } = useReportsStore();
   const {
     stats,
     statsLoading,
@@ -145,9 +153,7 @@ const UserDashboard = () => {
     setIsSearching(true);
     try {
       // Search in reports
-      const reports = await api.fetchReports({
-        // Add search parameter if backend supports it
-      });
+      const reports = await api.fetchReports({});
 
       // Filter reports by search query
       const filteredReports = reports.filter(
@@ -191,8 +197,6 @@ const UserDashboard = () => {
     linkElement.click();
   };
 
-  // Quick actions moved to RightPanel component
-
   const { data: reports, refetch } = useQuery({
     queryKey: ["reports", filters],
     queryFn: () =>
@@ -204,7 +208,6 @@ const UserDashboard = () => {
     refetchInterval: realtimeEnabled ? 5000 : false,
   });
 
-  // Live connection status: ping a lightweight public endpoint
   const { isLoading: connLoading, isError: connError } = useQuery({
     queryKey: ["live-connection"],
     queryFn: () => api.fetchReports({}),
@@ -213,13 +216,11 @@ const UserDashboard = () => {
     staleTime: 5000,
   });
 
-  // Load dashboard data on mount
   useEffect(() => {
     refreshAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Poll dashboard data for real-time values
   useEffect(() => {
     const id = setInterval(() => {
       refreshAll();
