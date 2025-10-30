@@ -87,10 +87,11 @@ export function ProgressIndicator({
         )}
         <Progress value={progressPercentage} className={sizeClasses[size]} />
 
-        <div className="space-y-3">
-          {steps.map((step) => (
-            <div key={step.id} className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-0.5">
+        <div className="space-y-3 relative">
+          <div className="absolute left-2 top-0 bottom-0 w-px bg-border" />
+          {steps.map((step, i) => (
+            <div key={step.id} className="flex items-start space-x-3 relative">
+              <div className="flex-shrink-0 mt-0.5 relative z-10">
                 {step.completed ? (
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 ) : step.current ? (
@@ -98,7 +99,7 @@ export function ProgressIndicator({
                 ) : step.blocked ? (
                   <AlertCircle className="h-5 w-5 text-red-600" />
                 ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
+                  <div className="h-5 w-5 rounded-full border-2 border-muted-foreground bg-background" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -260,7 +261,7 @@ export function ProgressIndicator({
   };
 
   return (
-    <Card className={className}>
+    <Card className={cn("border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50", className)}>
       <CardHeader className="pb-4">
         <CardTitle className="text-lg">{title}</CardTitle>
         {description && (

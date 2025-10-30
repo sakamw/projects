@@ -95,7 +95,7 @@ export function RightPanel({
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="overflow-hidden border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50">
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
@@ -109,7 +109,7 @@ export function RightPanel({
                     <DialogTrigger>
                       <Button
                         variant="outline"
-                        className="h-auto p-4 flex flex-col items-center gap-2 text-center"
+                        className="h-auto p-4 flex flex-col items-center gap-2 text-center rounded-xl border bg-background hover:bg-muted/60 transition-colors"
                       >
                         <Icon className="h-6 w-6" />
                         <div className="space-y-1">
@@ -143,12 +143,14 @@ export function RightPanel({
                           <Button
                             onClick={() => handleSearch(searchQuery)}
                             disabled={isSearching}
+                            className="gap-2"
                           >
                             {isSearching ? (
                               <RefreshCw className="h-4 w-4 animate-spin" />
                             ) : (
                               <Search className="h-4 w-4" />
                             )}
+                            Search
                           </Button>
                         </div>
                         <div className="max-h-96 overflow-y-auto">
@@ -204,20 +206,23 @@ export function RightPanel({
                 );
               }
               return (
-                <Button
+                <button
                   key={action.id}
-                  variant="outline"
-                  className="h-auto p-4 flex flex-col items-center gap-2 text-center"
                   onClick={action.onClick}
+                  className="group h-auto p-4 rounded-xl border bg-gradient-to-br from-muted/40 to-background hover:from-primary/10 hover:to-background transition-colors text-left"
                 >
-                  <Icon className="h-6 w-6" />
-                  <div className="space-y-1">
-                    <div className="font-medium text-sm">{action.label}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {action.description}
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-muted group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <div className="space-y-1">
+                      <div className="font-medium text-sm">{action.label}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {action.description}
+                      </div>
                     </div>
                   </div>
-                </Button>
+                </button>
               );
             })}
           </div>
@@ -229,8 +234,8 @@ export function RightPanel({
           Loading profile...
         </div>
       ) : profile ? (
-        <div className="bg-muted/30 p-4 rounded-lg">
-          <div className="text-sm font-medium mb-2">Welcome back!</div>
+        <div className="p-4 rounded-xl border bg-card/60">
+          <div className="text-sm font-medium mb-1">Welcome back!</div>
           <div className="text-sm text-muted-foreground">
             {profile.firstName} {profile.lastName}
           </div>
@@ -239,8 +244,8 @@ export function RightPanel({
           </div>
         </div>
       ) : (
-        <div className="bg-muted/30 p-4 rounded-lg">
-          <div className="text-sm font-medium mb-2">Profile</div>
+        <div className="p-4 rounded-xl border bg-card/60">
+          <div className="text-sm font-medium mb-1">Profile</div>
           <div className="text-sm text-muted-foreground">
             Sign in to view your profile
           </div>

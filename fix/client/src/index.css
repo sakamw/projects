@@ -15,6 +15,39 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Futuristic helpers */
+@layer utilities {
+  .bg-grid-dots {
+    background-image: radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+}
+
+/* Aurora gradient animation */
+.aurora {
+  background:
+    radial-gradient(ellipse at 10% 10%, hsl(var(--accent) / 0.25), transparent 35%),
+    radial-gradient(ellipse at 90% 20%, hsl(var(--primary) / 0.25), transparent 35%),
+    radial-gradient(ellipse at 50% 100%, hsl(var(--secondary) / 0.25), transparent 35%);
+  filter: blur(40px);
+  animation: aurora-move 16s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-move {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(10px) scale(1.02);
+    opacity: 0.4;
+  }
+}
+
 body {
   margin: 0;
   min-width: 320px;

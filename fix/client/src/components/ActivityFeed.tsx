@@ -105,7 +105,7 @@ export function ActivityFeed({
   };
 
   return (
-    <Card className={className}>
+    <Card className={cn("border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50", className)}>
       <CardHeader>
         <CardTitle className="text-lg">Recent Activity</CardTitle>
         {showSearch && (
@@ -129,7 +129,7 @@ export function ActivityFeed({
       </CardHeader>
       <CardContent>
         <ScrollArea style={{ maxHeight }}>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredActivities.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -145,7 +145,7 @@ export function ActivityFeed({
                 const iconColor = activityColors[activity.type];
 
                 return (
-                  <div key={activity.id} className="flex items-start space-x-3">
+                  <div key={activity.id} className="flex items-start space-x-3 rounded-lg border bg-card/60 p-3">
                     <div className={cn("mt-1", iconColor)}>
                       <Icon className="h-4 w-4" />
                     </div>

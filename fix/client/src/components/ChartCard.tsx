@@ -97,15 +97,18 @@ export function ChartCard({
         {data?.slice(0, 6).map((item, index) => (
           <div key={item.label} className="flex flex-col items-center">
             <div
-              className="bg-primary/80 rounded-t-sm w-8 mb-2"
+              className="rounded-t-md w-8 mb-2 transition-all duration-300"
               style={{
                 height: `${
                   (item.value /
                     Math.max(...(data?.map((d) => d.value) || [1]))) *
                   100
                 }%`,
-                backgroundColor:
-                  item.color || `hsl(${(index * 60) % 360}, 70%, 50%)`,
+                background:
+                  item.color
+                    ? item.color
+                    : `linear-gradient(180deg, hsl(${(index * 60) % 360}, 85%, 55%) 0%, hsl(${(index * 60) % 360}, 70%, 45%) 100%)`,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
               }}
             />
             <div className="text-xs text-muted-foreground transform -rotate-45 origin-top-left whitespace-nowrap">
@@ -118,10 +121,15 @@ export function ChartCard({
   };
 
   return (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+<Card className={cn("relative overflow-hidden border bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50 shadow-sm", className)}>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+      <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center space-x-2">
-          {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+          {Icon && (
+            <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
+              <Icon className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
           <CardTitle className="text-base">{title}</CardTitle>
         </div>
         <div className="flex items-center space-x-2">
@@ -138,11 +146,11 @@ export function ChartCard({
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         {description && (
           <p className="text-sm text-muted-foreground mb-4">{description}</p>
         )}
-        <div className="rounded-lg border bg-card/50 p-4" style={{ height }}>
+        <div className="rounded-xl border bg-gradient-to-br from-background/50 to-muted/10 p-4 shadow-sm" style={{ height }}>
           {renderMockChart()}
         </div>
         {actions.length > 0 && (
